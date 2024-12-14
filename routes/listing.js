@@ -3,71 +3,29 @@ const router = express.Router();
 const wrapAsync = require("../utils/wrapAsync.js");
 const Listing = require("../models/listing.js");
 const {isloggedin , isOwner ,validatelisting} =require("../middleware.js")// for authentication
+const listingController = require("../controllers/listing.js")
+const multer  = require('multer');
+const {storage} = require("../cloudConfig.js");
+const upload = multer({storage});
 
+router
+  .route("/")
+  .get(wrapAsync(listingController.index)) // Removed "/" argument
+  .post(
+    isloggedin, 
+    upload.single("listing[image]"),
+    validatelisting, 
+    wrapAsync(listingController.createListing)
+  );
 
-//Index Route
-router.get("/", wrapAsync(async (req, res) => {
-    const allListings = await Listing.find({});
-    res.render("listings/index.ejs", { allListings });
-  }));
-  
   //New Route
-  router.get("/new", isloggedin, (req, res) => {//here we can add middleware if our passport start working fine
-    res.render("listings/new.ejs");
-  });
-  
-  //Show Route
-  router.get("/:id", wrapAsync(async (req, res) => {
-    let { id } = req.params;
-    const listing = await Listing.findById(id).populate({path : "reviews",
-      populate :{path:"author",}})
-      .populate("owner");
-    if(!listing){
-      req.flash("error","Sorry,No similar listing! ");
-      res.redirect("/listings");
-    }
-    res.render("listings/show.ejs", { listing });
-  }));
-  
-  //Create Route
-  router.post("/", isloggedin, validatelisting, wrapAsync(async(req, res,next) => {
-    
-      const newListing = new Listing(req.body.listing);
-      newListing.owner = req.user._id;
-      await newListing.save();
-      req.flash("success","New listing created!");
-      res.redirect("/listings");
-   
-   
-  }));
+  router.get("/new", isloggedin, listingController.renderNewForm);
+router
+    .route("/:id")
+    .get(wrapAsync(listingController.showListing))
+    .put(isloggedin,isOwner, validatelisting, wrapAsync(listingController.updateListing))
+    .delete(isloggedin,isOwner,wrapAsync(listingController.destroyListing))
   
   //Edit Route
-  router.get("/:id/edit", isloggedin,isOwner,  wrapAsync(async (req, res) => {
-    let { id } = req.params;
-    const listing = await Listing.findById(id);
-    if(!listing){
-      req.flash("error","Sorry,No similar listing! ");
-      res.redirect("/listings");
-    }
-    res.render("listings/edit.ejs", { listing });
-  }));
-  
-  //Update Route
-  router.put("/:id", isloggedin,isOwner, validatelisting, wrapAsync(async (req, res) => {
-    let { id } = req.params;
-    await Listing.findByIdAndUpdate(id, { ...req.body.listing });
-    req.flash("success","listing Updated!");
-
-    res.redirect(`/listings/${id}`);
-  }));
-  
-  //Delete Route
-  router.delete("/:id" ,isloggedin,isOwner,wrapAsync(async (req, res) => {
-    let { id } = req.params;
-    let deletedListing = await Listing.findByIdAndDelete(id);
-    console.log(deletedListing);
-    req.flash("success","listing deleted!");
-
-    res.redirect("/listings");
-  }));
-  module.exports = router;
+  router.get("/:id/edit", isloggedin,isOwner,  wrapAsync(listingController.renderEditForm));
+    module.exports = router;
