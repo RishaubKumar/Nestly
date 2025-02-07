@@ -1,0 +1,33 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm py-3">
+    <div class="container">
+      <!-- Brand Logo -->
+      <a class="navbar-brand text-danger fw-bold" href="/home">
+        <i class="fa-solid fa-location-arrow"></i> Nestly
+      </a>
+
+      <!-- Navbar Toggler for Mobile View -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Navbar Links -->
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <% if (!currUser) { %>
+            <!-- Show Login and Signup when no user is logged in -->
+            <li class="nav-item">
+              <a class="nav-link text-danger fw-bold" href="/signup">Sign Up</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-danger fw-bold" href="/login">Login</a>
+            </li>
+          <% } else { %>
+            <!-- Show Logout when user is logged in -->
+            <li class="nav-item">
+              <a class="nav-link text-danger fw-bold" href="/logout">Logout</a>
+            </li>
+          <% } %>
+        </ul>
+      </div>
+    </div>
+  </nav>

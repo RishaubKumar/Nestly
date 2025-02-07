@@ -60,3 +60,6 @@ module.exports.destroyListing = async (req, res) => {
 
   res.redirect("/listings");
 }
+module.exports.renderHome = (req, res) => {
+  res.render("home.ejs",{ isHomePage: true });
+};

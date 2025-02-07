@@ -11,7 +11,7 @@ const ExpressError = require("./utils/ExpressError.js");
 const listingRouter = require("./routes/listing.js");
 const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
-
+const homeRouter = require("./routes/home.js");
 
 const session = require('express-session');
 const flash = require('connect-flash');
@@ -49,7 +49,6 @@ const sessionOptions = {
     httpOnly: true // This ensures the cookie is not accessible via client-side scripts
   }
 };
-
 app.get("/", (req, res) => {
   res.redirect("/listings");
   // res.send("Hi, I am root");
@@ -68,6 +67,8 @@ app.use((req,res,next)=>{
   res.locals.currUser = req.user;
   next();
 });
+app.use("/home", homeRouter);
+
 // app.get("/demouser",async(req,res)=>{
 //   let fakeUser = new User({
 //     email:"student@gamil.com",
