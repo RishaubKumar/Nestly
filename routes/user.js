@@ -1,25 +1,29 @@
 const express = require("express");
 const router = express.Router();
-const User = require("../models/user.js")
+const User = require("../models/user.js");
 const wrapAsync = require("../utils/wrapAsync.js");
 const passport = require("passport");
-const {saveRedirectUrl} = require("../middleware.js")
-const userController = require("../controllers/user.js")
+const { saveRedirectUrl, isloggedin } = require("../middleware.js");
+const userController = require("../controllers/user.js");
 
 router.route("/signup")
-.get(userController.renderSignupForm)
-.post(wrapAsync(userController.signUp))
+  .get(userController.renderSignupForm)
+  .post(wrapAsync(userController.signUp));
 
 router.route("/login")
-.get( userController.renderLoginForm)
-.post(
-     saveRedirectUrl,
-     passport.authenticate("local", {
-        failureRedirect: '/login', // Redirect on failure
-       failureFlash: true // Enable flash messages for failure
+  .get(userController.renderLoginForm)
+  .post(
+    saveRedirectUrl,
+    passport.authenticate("local", {
+      failureRedirect: '/login',
+      failureFlash: true
     }),
-userController.login
-)
-router.get('/logout',userController.logout)
+    userController.login
+  );
+
+router.get('/logout', userController.logout);
+
+// New route for the user dashboard
+router.get('/user/dashboard', isloggedin, wrapAsync(userController.renderUserDashboard));
 
 module.exports = router;

@@ -1,23 +1,33 @@
 <% layout("/layouts/boilerplate") %>
-  <body>
-    <!-- <h3>All Listings</h3> -->
-    <!-- <form method="GET" action="/listings/new">
-      <button>Create New Listing</button>
-    </form> -->
-    <br>
+<body>
+  <div class="container mt-4">
+    <!-- Search Bar -->
+    <form method="GET" action="/listings" class="mb-4">
+      <div class="input-group">
+        <input type="text" name="q" class="form-control" placeholder="Search by location..." value="<%= typeof q !== 'undefined' ? q : '' %>">
+        <button type="submit" class="btn btn-outline-secondary">Search</button>
+      </div>
+    </form>
+    
+    <!-- Listings Grid -->
     <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1">
-      <% for(let listing of allListings) { %>
-        <a href="/listings/<%=listing._id%>" class="listing-link">
-          <div class="card col listing-card" >
-            <img src="<%= listing.image.url %>" class="card-img-top" alt="listing_image" style="height: 20rem;">
-            <div class="card-img-overlay"></div>
+      <% allListings.forEach(function(listing) { %>
+        <a href="/listings/<%= listing._id %>" class="listing-link">
+          <div class="card col listing-card">
+            <% if (listing.image && listing.image.url) { %>
+              <img src="<%= listing.image.url %>" class="card-img-top" alt="Listing Image" style="height: 20rem;">
+            <% } %>
             <div class="card-body">
-              <p class="card-text"><b><%= listing.title %></b>
-              <br>&#8377
-              <%= listing.price.toLocaleString("en-IN") %>/night</p>
+              <p class="card-text">
+                <b><%= listing.title %></b>
+                <br>&#8377; <%= listing.price.toLocaleString("en-IN") %>/night
+                <br><small><%= listing.location %></small>
+              </p>
             </div>
           </div>
         </a>
-        <% } %>
+      <% }); %>
     </div>
-  </body>
+  </div>
+</body>
+

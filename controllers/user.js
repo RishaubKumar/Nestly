@@ -1,4 +1,5 @@
 const Listing = require("../models/listing");
+const Booking = require('../models/booking');
 const User = require("../models/user");
 module.exports.renderSignupForm = (req,res)=>{
     res.render("users/signup.ejs");
@@ -40,3 +41,14 @@ module.exports.logout = (req,res,next)=>{
         res.redirect("/listings");
     })
 }
+exports.renderUserDashboard = async (req, res) => {
+    try {
+      // Fetch bookings for the logged-in user and populate the property field
+      const bookings = await Booking.find({ user: req.user._id }).populate('property');
+      res.render('userDashboard', { bookings });  // Pass the bookings variable to the view
+    } catch (error) {
+      console.error("Error fetching user dashboard:", error);
+      req.flash("error", "Unable to fetch bookings.");
+      res.redirect("back");
+    }
+  };

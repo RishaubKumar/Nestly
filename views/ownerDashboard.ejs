@@ -1,0 +1,46 @@
+<% layout("/layouts/boilerplate") %>
+<div class="container mt-4">
+  <h1>Owner Dashboard</h1>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th>Guest Name</th>
+        <th>Check-in</th>
+        <th>Check-out</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% bookings.forEach(booking => { %>
+        <tr>
+          <td><%= booking.property.title %></td>
+          <td><%= booking.fullName %></td>
+          <td><%= new Date(booking.checkIn).toLocaleDateString() %></td>
+          <td><%= new Date(booking.checkOut).toLocaleDateString() %></td>
+          <td>
+            <% if (booking.status === 'accepted') { %>
+              Accepted
+            <% } else { %>
+              <%= booking.status %>
+            <% } %>
+          </td>
+          <td>
+            <% if (booking.status === 'pending') { %>
+              <!-- Clicking "Proceed" will submit the bookingId to update its status -->
+              <form action="/owner/accept" method="POST" style="display:inline;">
+                <input type="hidden" name="bookingId" value="<%= booking._id %>">
+                <button type="submit" class="btn btn-primary btn-sm">Proceed</button>
+              </form>
+            <% } else { %>
+              <!-- Optionally, you can make processed bookings clickable or just show a label -->
+              <span class="text-success">Processed</span>
+            <% } %>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+

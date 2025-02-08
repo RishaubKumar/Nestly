@@ -55,3 +55,14 @@ module.exports.isReviewAuthor = async (req,res,next)=>{
 }
 next();
 }
+module.exports.setUserRole = async (req, res, next) => {
+  if (req.user) {
+    // Check if the user owns any listings
+    const ownedListings = await Listing.findOne({ owner: req.user._id });
+
+    // Set ownsListings to true if at least one listing is found
+    res.locals.currUser = req.user;
+    res.locals.currUser.ownsListings = !!ownedListings;
+  }
+  next();
+};
