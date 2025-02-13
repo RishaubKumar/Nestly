@@ -1,7 +1,9 @@
 // controllers/bookingController.js
+// controllers/booking.js
 
 const Booking = require('../models/booking');
 const Listing = require('../models/listing'); // Ensure this model exists and is registered as "Listing"
+const ExpressError = require("../utils/ExpressError");
 
 // Create a booking; the guest name (fullName) is auto-filled from the logged-in user.
 exports.createBooking = async (req, res) => {
@@ -85,3 +87,34 @@ exports.listBookings = async (req, res) => {
     return res.redirect('back');
   }
 };
+
+module.exports.cancelBooking = async (req, res) => {
+  const { id } = req.params;
+  const booking = await Booking.findById(id);
+
+  if (!booking) {
+    req.flash("error", "Booking not found.");
+    return res.redirect("/user/dashboard");
+  }
+
+  const now = new Date();
+  const checkIn = new Date(booking.checkIn);
+  const diffInMs = checkIn - now; // difference in milliseconds
+  const hoursDiff = diffInMs / (1000 * 60 * 60); // Convert to hours
+
+  // Check if the booking is more than 24 hours away from check-in or if it was made within 24 hours
+  if (hoursDiff < 24) {
+    req.flash("error", "You cannot cancel your booking within 24 hours of check-in.");
+    return res.redirect("/user/dashboard");
+  }
+
+  booking.status = "cancelled"; // Update status to cancelled
+  await booking.save();
+
+  // After updating the status, delete the booking from the database
+  await Booking.findByIdAndDelete(id);
+
+  req.flash("success", "Your booking has been cancelled.");
+  res.redirect("/user/dashboard");
+};
+

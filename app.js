@@ -13,7 +13,7 @@ const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
 const homeRouter = require("./routes/home.js");
 const bookingRoutes = require("./routes/bookingRoutes.js"); // New booking routes
-const { setUserRole } = require('./middleware');
+const { isloggedin , setUserRole } = require('./middleware');
 
 const session = require('express-session');
 const flash = require('connect-flash');
@@ -70,16 +70,16 @@ app.use((req, res, next) => {
 
 // Root redirect to listings
 app.get("/", (req, res) => {
-  res.redirect("/listings");
+  res.redirect("/home");
 });
 
 app.use("/home", homeRouter);
-app.use('/listings', listingRouter);
+app.use('/listings',isloggedin , listingRouter);
 app.use('/listings/:id/reviews', reviewRouter);
 app.use(setUserRole);
 app.use('/', userRouter);
 app.use('/', bookingRoutes);  // Mount the booking routes here
-
+app.use("/bookings", bookingRoutes);
 // app.all("/*", (req, res, next) => {
 //   next(new ExpressError(404, "Page not found!"));
 // });

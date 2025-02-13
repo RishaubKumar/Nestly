@@ -18,9 +18,18 @@ async function main() {
 
 const initDB = async () => {
   await Listing.deleteMany({});
-  initData.data = initData.data.map((obj)=>({...obj,owner:"675c493c064ecbe5b1fbe60d"}));
+  // Convert old 'image' field to 'images' array if necessary,
+  // and add an owner to each listing.
+  initData.data = initData.data.map((obj) => {
+    if (obj.image && !obj.images) {
+      obj.images = [obj.image]; // wrap the old image object in an array
+      delete obj.image; // remove the old key
+    }
+    return { ...obj, owner: "675c493c064ecbe5b1fbe60d" };
+  });
   await Listing.insertMany(initData.data);
   console.log("data was initialized");
 };
 
 initDB();
+

@@ -41,11 +41,13 @@ module.exports.showListing = async (req, res) => {
 };
 
 module.exports.createListing = async (req, res, next) => {
-  let url = req.file.path;
-  let filename = req.file.filename;
+  // Create a new listing using data from the form
   const newListing = new Listing(req.body.listing);
   newListing.owner = req.user._id;
-  newListing.image = { url, filename };
+  // Map through the array of uploaded files and create an array of image objects
+  if (req.files && req.files.length > 0) {
+    newListing.images = req.files.map(file => ({ url: file.path, filename: file.filename }));
+  }
   await newListing.save();
   req.flash("success", "New listing created!");
   res.redirect("/listings");
@@ -62,17 +64,36 @@ module.exports.renderEditForm = async (req, res) => {
 };
 
 module.exports.updateListing = async (req, res) => {
-  let { id } = req.params;
+  const { id } = req.params;
   let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing });
-  if (typeof req.file !== "undefined") {
-    let url = req.file.path;
-    let filename = req.file.filename;
-    listing.image = { url, filename };
+  
+  // Remove images if checkboxes are checked
+  if (req.body.deleteImages) {
+    const deleteFilenames = Array.isArray(req.body.deleteImages)
+      ? req.body.deleteImages
+      : [req.body.deleteImages];
+    // Optionally, remove images from cloud storage here if needed.
+    listing.images = listing.images.filter(
+      img => !deleteFilenames.includes(img.filename)
+    );
     await listing.save();
   }
+  
+  // Add any new images uploaded
+  if (req.files && req.files.length > 0) {
+    const newImages = req.files.map(file => ({
+      url: file.path,
+      filename: file.filename
+    }));
+    listing.images.push(...newImages);
+    await listing.save();
+  }
+  
   req.flash("success", "Listing updated!");
   res.redirect(`/listings/${id}`);
 };
+
+
 
 module.exports.destroyListing = async (req, res) => {
   let { id } = req.params;

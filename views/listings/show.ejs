@@ -1,5 +1,16 @@
 <% layout("/layouts/boilerplate") %>
 
+<%
+  // Compute overall average rating from all reviews
+  let avgRating = 0;
+  if (listing.reviews && listing.reviews.length > 0) {
+    let sum = 0;
+    listing.reviews.forEach(review => { sum += review.rating; });
+    avgRating = sum / listing.reviews.length;
+    avgRating = Math.round(avgRating * 10) / 10; // round to one decimal place
+  }
+%>
+
 <!-- Outer Container with Padding -->
 <div class="container p-4">
   <!-- Listing Details Section -->
@@ -7,45 +18,48 @@
     <div class="col-8 offset-2">
       <h3 class="mt-2 text-center"><%= listing.title %></h3>
       <div class="card listing-card mt-4 mx-auto" style="max-width: 600px;">
-        <% if(listing.image && listing.image.url) { %>
-          <img
-            src="<%= listing.image.url %>"
-            class="card-img-top show-img"
-            alt="listing image"
-            style="object-fit: cover; max-height: 400px;"
-          >
-        <% } else if(listing.image) { %>
-          <img
-            src="<%= listing.image %>"
-            class="card-img-top show-img"
-            alt="listing image"
-            style="object-fit: cover; max-height: 400px;"
-          >
+        <% if (listing.images && listing.images.length > 0) { %>
+          <!-- Amazon-like Gallery -->
+          <div class="gallery-container" style="display: flex; gap: 20px;">
+            <div class="main-image" style="flex: 1; max-width: 60%; border: 1px solid #ddd; padding: 5px;">
+              <img id="selectedImage" src="<%= listing.images[0].url %>" class="card-img-top show-img" alt="listing image" style="object-fit: cover; max-height: 400px;">
+            </div>
+            <div class="thumbnails" style="display: flex; flex-direction: column; gap: 10px; max-width: 35%;">
+              <% listing.images.forEach(function(image, index) { %>
+                <div class="thumbnail <%= index === 0 ? 'active' : '' %>" data-url="<%= image.url %>" style="border: 1px solid #ddd; cursor: pointer; padding: 2px;">
+                  <img src="<%= image.url %>" alt="Thumbnail <%= index + 1 %>" style="width: 100%; height: auto; object-fit: cover;">
+                </div>
+              <% }); %>
+            </div>
+          </div>
+        <% } else { %>
+          <img src="/images/default.jpg" class="card-img-top show-img" alt="default listing image" style="object-fit: cover; max-height: 400px;">
         <% } %>
 
         <div class="card-body p-3">
           <p class="card-text mb-1">
-            <strong>Owned By:</strong>
-            <i><%= listing.owner.username %></i>
+            <strong>Owned By:</strong> <i><%= listing.owner.username %></i>
           </p>
           <p class="card-text mb-1"><%= listing.description %></p>
           <p class="card-text mb-1">
-            <strong>Price:</strong>
-            &#8377;<%= listing.price.toLocaleString("en-IN") %>
+            <strong>Price:</strong> &#8377;<%= listing.price.toLocaleString("en-IN") %>
           </p>
-          <p class="card-text mb-1"><%= listing.location %></p>
-          <p class="card-text mb-0"><%= listing.country %></p>
+          <p class="card-text mb-1">
+            <strong>Location:</strong>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=<%= encodeURIComponent(listing.location + ', ' + listing.country) %>" target="_blank">
+              <%= listing.location %>, <%= listing.country %>
+            </a>
+          </p>
+          <p class="card-text mb-1">
+            <strong>Overall Rating:</strong> <%= avgRating %> / 5 (<%= listing.reviews ? listing.reviews.length : 0 %> reviews)
+          </p>
         </div>
       </div>
 
-      <% if(currUser && currUser._id.equals(listing.owner._id)) { %>
+      <% if (currUser && currUser._id.equals(listing.owner._id)) { %>
         <div class="text-center mt-3">
           <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark me-2">Edit</a>
-          <form
-            method="POST"
-            action="/listings/<%= listing._id %>?_method=DELETE"
-            class="d-inline"
-          >
+          <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" class="d-inline">
             <button class="btn btn-danger">Delete</button>
           </form>
         </div>
@@ -61,56 +75,30 @@
     <div class="col-md-8 mb-5">
       <% if (currUser) { %>
         <h4 class="mb-3">Leave a Review</h4>
-        <form
-          action="/listings/<%= listing._id %>/reviews"
-          method="POST"
-          novalidate
-          class="needs-validation mb-5"
-        >
+        <form action="/listings/<%= listing._id %>/reviews" method="POST" novalidate class="needs-validation mb-5">
           <!-- Rating Field -->
           <div class="mb-3">
             <label for="rating" class="form-label">Rating</label>
             <fieldset class="starability-slot">
-              <input
-                type="radio"
-                id="no-rate"
-                class="input-no-rate"
-                name="review[rating]"
-                value="1"
-                checked
-                aria-label="No rating."
-              />
+              <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" checked aria-label="No rating." />
               <input type="radio" id="first-rate1" name="review[rating]" value="1" />
               <label for="first-rate1" title="Terrible">1 star</label>
-
               <input type="radio" id="first-rate2" name="review[rating]" value="2" />
               <label for="first-rate2" title="Not good">2 stars</label>
-
               <input type="radio" id="first-rate3" name="review[rating]" value="3" />
               <label for="first-rate3" title="Average">3 stars</label>
-
               <input type="radio" id="first-rate4" name="review[rating]" value="4" />
               <label for="first-rate4" title="Very good">4 stars</label>
-
               <input type="radio" id="first-rate5" name="review[rating]" value="5" />
               <label for="first-rate5" title="Amazing">5 stars</label>
             </fieldset>
           </div>
-
           <!-- Comment Field -->
           <div class="mb-3">
             <label for="comment" class="form-label">Comment</label>
-            <textarea
-              name="review[comment]"
-              id="comment"
-              cols="30"
-              rows="4"
-              class="form-control"
-              required
-            ></textarea>
+            <textarea name="review[comment]" id="comment" cols="30" rows="4" class="form-control" required></textarea>
             <div class="invalid-feedback">Please leave some comment!</div>
           </div>
-
           <button class="btn btn-outline-dark">Submit</button>
         </form>
       <% } %>
@@ -125,17 +113,12 @@
               <p class="starability-result mb-1" data-rating="<%= review.rating %>"></p>
               <p class="card-text mb-1"><%= review.comment %></p>
               <p class="card-text"><%= review.rating %> Stars</p>
-
-              <form
-                action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE"
-                method="POST"
-                class="mb-0"
-              >
+              <form action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" method="POST" class="mb-0">
                 <button class="btn btn-sm btn-danger">Delete</button>
               </form>
             </div>
           </div>
-        <% }) %>
+        <% }); %>
       </div>
     </div>
 
@@ -145,81 +128,52 @@
         <div class="card-body p-3">
           <h4 class="fw-bold">Book this Place</h4>
           <p>
-            <strong>Price:</strong>
-            &#8377;<%= listing.price.toLocaleString("en-IN") %> / night
+            <strong>Price:</strong> &#8377;<%= listing.price.toLocaleString("en-IN") %> / night
           </p>
-
           <form action="/user/dashboard" method="POST">
             <input type="hidden" name="listingId" value="<%= listing._id %>">
-
             <!-- Check-in Date -->
             <div class="mb-3">
               <label for="checkin" class="form-label">Check-in Date</label>
-              <input
-                type="date"
-                name="checkin"
-                class="form-control"
-                required
-              >
+              <input type="date" name="checkin" class="form-control" required>
             </div>
-
             <!-- Check-out Date -->
             <div class="mb-3">
               <label for="checkout" class="form-label">Check-out Date</label>
-              <input
-                type="date"
-                name="checkout"
-                class="form-control"
-                required
-              >
+              <input type="date" name="checkout" class="form-control" required>
             </div>
-
             <!-- Number of Guests -->
             <div class="mb-3">
               <label for="guests" class="form-label">Number of Guests</label>
-              <input
-                type="number"
-                name="guests"
-                class="form-control"
-                min="1"
-                max="4"
-                required
-              >
+              <input type="number" name="guests" class="form-control" min="1" max="4" required>
             </div>
-
             <!-- Full Name (Auto-filled) -->
             <div class="mb-3">
               <label for="fullName" class="form-label">Your Full Name</label>
-              <input
-                type="text"
-                name="fullName"
-                class="form-control"
-                value="<%= currUser ? currUser.username : '' %>"
-                readonly
-                required
-              >
+              <input type="text" name="fullName" class="form-control" value="<%= currUser ? currUser.username : '' %>" readonly required>
             </div>
-
             <!-- Phone Number -->
             <div class="mb-3">
               <label for="phone" class="form-label">Phone Number</label>
-              <input
-                type="tel"
-                name="phone"
-                class="form-control"
-                required
-              >
+              <input type="tel" name="phone" class="form-control" required>
             </div>
-
-            <button
-              type="submit"
-              class="btn btn-danger w-100 fw-bold"
-            >
-              Book Now
-            </button>
+            <button type="submit" class="btn btn-danger w-100 fw-bold">Book Now</button>
           </form>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+  // JavaScript to update main image when a thumbnail is clicked
+  const thumbnails = document.querySelectorAll('.thumbnail');
+  const selectedImage = document.getElementById('selectedImage');
+  thumbnails.forEach(thumbnail => {
+    thumbnail.addEventListener('click', function() {
+      thumbnails.forEach(t => t.classList.remove('active'));
+      selectedImage.src = this.getAttribute('data-url');
+      this.classList.add('active');
+    });
+  });
+</script>

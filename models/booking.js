@@ -22,7 +22,7 @@ const BookingSchema = new Schema({
   checkOut: { type: Date, required: true },
   status: { 
     type: String, 
-    enum: ['pending', 'accepted', 'rejected'], 
+    enum: ['pending', 'accepted', "cancelled"], 
     default: 'pending' 
   },
   createdAt: { type: Date, default: Date.now }

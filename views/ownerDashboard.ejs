@@ -15,7 +15,13 @@
     <tbody>
       <% bookings.forEach(booking => { %>
         <tr>
-          <td><%= booking.property.title %></td>
+          <td>
+            <% if (booking.property) { %>
+              <%= booking.property.title %>
+            <% } else { %>
+              <span class="text-muted">[Property not available]</span>
+            <% } %>
+          </td>
           <td><%= booking.fullName %></td>
           <td><%= new Date(booking.checkIn).toLocaleDateString() %></td>
           <td><%= new Date(booking.checkOut).toLocaleDateString() %></td>
@@ -28,13 +34,11 @@
           </td>
           <td>
             <% if (booking.status === 'pending') { %>
-              <!-- Clicking "Proceed" will submit the bookingId to update its status -->
               <form action="/owner/accept" method="POST" style="display:inline;">
                 <input type="hidden" name="bookingId" value="<%= booking._id %>">
                 <button type="submit" class="btn btn-primary btn-sm">Proceed</button>
               </form>
             <% } else { %>
-              <!-- Optionally, you can make processed bookings clickable or just show a label -->
               <span class="text-success">Processed</span>
             <% } %>
           </td>

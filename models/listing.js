@@ -8,27 +8,31 @@ const listingSchema = new Schema({
     required: true,
   },
   description: String,
-  image: {
-    url: String,
-    filename: String,
-
-  },
+  // Changed from a single image to an array of images
+  images: [
+    {
+      url: String,
+      filename: String,
+    }
+  ],
   price: Number,
   location: String,
   country: String,
-  reviews:[{
+  reviews: [{
     type: Schema.Types.ObjectId,
-    ref:"Review",
+    ref: "Review",
   }],
-  owner:{
+  owner: {
     type: Schema.Types.ObjectId,
     ref: "User"
   },
 });
-listingSchema.post("findOneAndDelete",async(listing)=>{
-  if(listing){
-    await Review.deleteMany({_id : {$in : listing.reviews}});
+
+listingSchema.post("findOneAndDelete", async (listing) => {
+  if (listing) {
+    await Review.deleteMany({ _id: { $in: listing.reviews } });
   }
 });
+
 const Listing = mongoose.model("Listing", listingSchema);
 module.exports = Listing;
