@@ -6,38 +6,47 @@ const Listing = require('../models/listing'); // Ensure this model exists and is
 const ExpressError = require("../utils/ExpressError");
 
 // Create a booking; the guest name (fullName) is auto-filled from the logged-in user.
+// controllers/bookingController.js
+
+
 exports.createBooking = async (req, res) => {
   try {
-    const { listingId, checkin, checkout, guests, phone } = req.body;
-    
+    const { listingId, startDate, durationInMonths, guests, phone } = req.body;
+
     // Retrieve the listing to get the owner info.
     const listing = await Listing.findById(listingId);
     if (!listing) {
       req.flash('error', 'Listing not found.');
       return res.redirect('back');
     }
-    
+
+    // Calculate the end date based on start date and duration
+    const start = new Date(startDate);
+    const end = new Date(start);
+    end.setMonth(start.getMonth() + parseInt(durationInMonths));
+
     // Auto-fill the guest name using the logged-in user's username.
     const booking = new Booking({
-      property: listing._id,    // Using listing._id as property reference
-      user: req.user._id,       // Logged-in user's ID
-      owner: listing.owner,     // Owner of the listing (assumed to be stored in the listing document)
-      checkIn: checkin,         // From form (ensure proper date format)
-      checkOut: checkout,       // From form
+      property: listing._id,
+      user: req.user._id,
+      owner: listing.owner,
+      startDate: start,
+      durationInMonths: parseInt(durationInMonths),
       guests,
-      fullName: req.user.username,  // Auto-fill guest name from the current user
+      fullName: req.user.username,
       phone
     });
-    
+
     await booking.save();
     req.flash('success', 'Booking request created successfully!');
-    return res.redirect('/user/dashboard'); // Adjust redirection as needed
+    return res.redirect('/user/dashboard');
   } catch (error) {
     console.error("Error creating booking:", error);
     req.flash('error', 'Error processing booking request');
     return res.redirect('back');
   }
 };
+
 
 // Render the owner dashboard with bookings for which the current user is the owner.
 exports.getOwnerDashboard = async (req, res) => {

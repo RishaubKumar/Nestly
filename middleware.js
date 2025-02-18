@@ -6,7 +6,7 @@ const ExpressError = require("./utils/ExpressError.js");
 module.exports.isloggedin = (req, res, next) => {
   if (!req.isAuthenticated()) {
     req.session.redirectUrl = req.originalUrl;
-    req.flash("error", "You must be logged in to create new listing!");
+    req.flash("error", "Please login to procced further !");
     return res.redirect("/login");
   }
   next();
@@ -30,13 +30,13 @@ module.exports.isOwner = async (req, res, next) => {
 };
 
 module.exports.validatelisting = (req, res, next) => {
-  let { error } = listingSchema.validate(req.body);
-  if (error) {
-    let errMsg = error.details.map((el) => el.message).join(",");
-    throw new ExpressError(400, errMsg);
-  } else {
-    next();
+  const { durationInMonths } = req.body;
+  if (!Number.isInteger(Number(durationInMonths)) || durationInMonths <= 0) {
+    req.flash('error', 'Invalid duration.');
+    return res.redirect('back');
   }
+  // Other validations
+  next();
 };
 
 module.exports.validateReview = (req, res, next) => {
