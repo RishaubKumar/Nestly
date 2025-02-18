@@ -6,13 +6,22 @@
       <tr>
         <th>Property</th>
         <th>Guest Name</th>
-        <th>Check-in</th>
-        <th>Check-out</th>
+        <th>Move-in Date</th>
+        <th>Move-out Date</th>
+        <th>Duration (months)</th>
         <th>Status</th>
         <th>Action</th>
       </tr>
     </thead>
     <tbody>
+      <% 
+         // Helper function to compute the move-out date based on start date and duration
+         function computeMoveOut(startDate, duration) {
+           const d = new Date(startDate);
+           d.setMonth(d.getMonth() + Number(duration));
+           return d;
+         }
+      %>
       <% bookings.forEach(booking => { %>
         <tr>
           <td>
@@ -23,8 +32,9 @@
             <% } %>
           </td>
           <td><%= booking.fullName %></td>
-          <td><%= new Date(booking.checkIn).toLocaleDateString() %></td>
-          <td><%= new Date(booking.checkOut).toLocaleDateString() %></td>
+          <td><%= new Date(booking.startDate).toLocaleDateString() %></td>
+          <td><%= computeMoveOut(booking.startDate, booking.durationInMonths).toLocaleDateString() %></td>
+          <td><%= booking.durationInMonths %></td>
           <td>
             <% if (booking.status === 'accepted') { %>
               Accepted
@@ -43,8 +53,7 @@
             <% } %>
           </td>
         </tr>
-      <% }) %>
+      <% }); %>
     </tbody>
   </table>
 </div>
-

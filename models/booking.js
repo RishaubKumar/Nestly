@@ -17,15 +17,27 @@ const BookingSchema = new Schema({
     ref: 'User',
     required: true
   },
-  fullName: { type: String, required: true },
-  startDate: { type: Date, required: true },
-  durationInMonths: { type: Number, required: true },
+  fullName: { 
+    type: String, 
+    required: true 
+  },
+  startDate: { 
+    type: Date, 
+    required: true 
+  },
+  durationInMonths: { 
+    type: Number, 
+    required: true 
+  },
   status: {
     type: String,
     enum: ['pending', 'accepted', 'cancelled'],
     default: 'pending'
   },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { 
+    type: Date, 
+    default: Date.now 
+  }
 });
 
 module.exports = mongoose.model('Booking', BookingSchema);

@@ -30,13 +30,13 @@ module.exports.isOwner = async (req, res, next) => {
 };
 
 module.exports.validatelisting = (req, res, next) => {
-  const { durationInMonths } = req.body;
-  if (!Number.isInteger(Number(durationInMonths)) || durationInMonths <= 0) {
-    req.flash('error', 'Invalid duration.');
-    return res.redirect('back');
+  let { error } = listingSchema.validate(req.body);
+  if (error) {
+    let errMsg = error.details.map((el) => el.message).join(",");
+    throw new ExpressError(400, errMsg);
+  } else {
+    next();
   }
-  // Other validations
-  next();
 };
 
 module.exports.validateReview = (req, res, next) => {

@@ -1,12 +1,20 @@
 <% layout("/layouts/boilerplate") %>
 <div class="container mt-4">
-  <h1>Your Bookings</h1>
+  <h1>Your Rent Requests </h1>
   <ul class="list-group">
+    <% 
+      // Helper function to compute move-out date from start date and duration in months
+      function computeMoveOut(startDate, durationInMonths) {
+        const d = new Date(startDate);
+        d.setMonth(d.getMonth() + Number(durationInMonths));
+        return d;
+      }
+    %>
     <% bookings.forEach(booking => { 
-         // Calculate the time difference between now and check-in:
          const now = new Date();
-         const checkIn = new Date(booking.checkIn);
-         const diffInMs = checkIn - now;
+         const moveIn = new Date(booking.startDate);
+         const moveOut = computeMoveOut(booking.startDate, booking.durationInMonths);
+         const diffInMs = moveIn - now; // difference between move-in and now
          const hoursDiff = diffInMs / (1000 * 60 * 60);
     %>
       <li class="list-group-item">
@@ -17,18 +25,20 @@
           <span class="text-muted">[Property not available]</span>
         <% } %>
         <br>
-        <strong>Check-in:</strong> <%= new Date(booking.checkIn).toLocaleDateString() %>
+        <strong>Move-in Date:</strong> <%= moveIn.toLocaleDateString() %>
         <br>
-        <strong>Check-out:</strong> <%= new Date(booking.checkOut).toLocaleDateString() %>
+        <strong>Move-out Date:</strong> <%= moveOut.toLocaleDateString() %>
+        <br>
+        <strong>Duration:</strong> <%= booking.durationInMonths %> month<%= booking.durationInMonths > 1 ? 's' : '' %>
         <br>
         <strong>Status:</strong> <%= booking.status %>
         <br>
         <% if (booking.status !== "cancelled" && hoursDiff >= 24) { %>
           <form action="/bookings/<%= booking._id %>/cancel" method="POST" class="mt-2">
-            <button type="submit" class="btn btn-warning btn-sm">Cancel Booking</button>
+            <button type="submit" class="btn btn-warning btn-sm">Cancel Request</button>
           </form>
         <% } else if (booking.status !== "cancelled" && hoursDiff < 24) { %>
-          <small class="text-danger">Cancellation not allowed within 24 hours of check-in.</small>
+          <small class="text-danger">Cancellation not allowed within 24 hours of move-in.</small>
         <% } %>
       </li>
     <% }) %>

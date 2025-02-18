@@ -11,37 +11,63 @@
   }
 %>
 
-<!-- Outer Container with Padding -->
 <div class="container p-2">
-  <!-- Listing Details Section -->
-  <div class="row mb-5">
-    <div class="col-12 ">
+  <!-- Title and Location -->
+  <div class="row mb-3">
+    <div class="col-12">
       <h3 class="mt-2 text-start"><%= listing.title %></h3>
       <p class="card-text mb-1">
         <strong>Location:</strong>
-        <a href="https://www.google.com/maps/dir/?api=1&destination=<%= encodeURIComponent(listing.location + ', ' + listing.country) %>" target="_blank">
+        <a 
+          href="https://www.google.com/maps/dir/?api=1&destination=<%= encodeURIComponent(listing.location + ', ' + listing.country) %>"
+          target="_blank"
+        >
           <%= listing.location %>, <%= listing.country %>
         </a>
       </p>
-      <div class="card listing-card mt-4" style="width: 100%;">
-        <% if (listing.images && listing.images.length > 0) { %>
-          <div class="gallery-container" style="display: flex; gap: 20px; width: 100%;">
-            <div class="main-image" style="flex: 1; border: 1px solid #ddd; padding: 5px; height: 100%;">
-              <img id="selectedImage" src="<%= listing.images[0].url %>" class="card-img show-img" alt="listing image" style="object-fit: cover; width: 100%; max-height: 450px;">
-            </div>
-            <div class="thumbnails" style="display: flex; flex-direction: column; gap: 10px; width: 30%;">
-              <% listing.images.forEach(function(image, index) { %>
-                <div class="thumbnail <%= index === 0 ? 'active' : '' %>" data-url="<%= image.url %>" style="border: 1px solid #ddd; cursor: pointer; padding: 2px;">
-                  <img src="<%= image.url %>" alt="Thumbnail <%= index + 1 %>" style="width: 100%; height: auto; object-fit: cover;">
-                </div>
-              <% }); %>
-            </div>
+    </div>
+  </div>
+
+  <!-- Images Section -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card listing-card" style="width: 100%;">
+        <% 
+          // The first image is used as the cover image
+          const coverImage = (listing.images && listing.images.length > 0) 
+            ? listing.images[0].url 
+            : '/images/default.jpg';
+          // The rest of the images (if any) become the gallery
+          const galleryImages = (listing.images && listing.images.length > 1)
+            ? listing.images.slice(1) 
+            : [];
+        %>
+
+        <!-- Cover Image -->
+        <div style="border: 1px solid #ddd; padding: 5px; max-height: 450px; margin-bottom: 15px;">
+          <img 
+            id="coverImage"
+            src="<%= coverImage %>"
+            alt="Cover Image"
+            style="object-fit: cover; width: 100%; max-height: 450px;"
+          >
+        </div>
+
+        <!-- Thumbnail Gallery (if more images exist) -->
+        <% if (galleryImages.length > 0) { %>
+          <div class="row">
+            <% galleryImages.forEach((img, index) => { %>
+              <div class="col-md-3 col-6 mb-3">
+                <img 
+                  src="<%= img.url %>"
+                  alt="Gallery image <%= index + 1 %>"
+                  style="object-fit: cover; width: 100%; height: 150px; cursor: pointer;"
+                  onclick="document.getElementById('coverImage').src = '<%= img.url %>'"
+                >
+              </div>
+            <% }) %>
           </div>
-        <% } else { %>
-          <img src="/images/default.jpg" class="card-img-top show-img" alt="default listing image" style="object-fit: cover; width: 100%; max-height: 400px;">
         <% } %>
-      </div>
-      
 
         <div class="card-body p-3">
           <p class="card-text mb-1">
@@ -54,8 +80,6 @@
           <p class="card-text mb-1">
             <strong>Price:</strong> &#8377;<%= listing.price.toLocaleString("en-IN") %>
           </p>
-
-
         </div>
       </div>
 
@@ -69,7 +93,22 @@
       <% } %>
     </div>
   </div>
-<div class="y-bottom">
+
+  <!-- "What This Place Offers" Section -->
+  <% if (listing.amenities && listing.amenities.length > 0) { %>
+    <div class="mt-4 mb-5">
+      <h4>What this place offers</h4>
+      <ul class="list-unstyled d-flex flex-wrap" style="gap: 20px;">
+        <% listing.amenities.forEach(amenity => { %>
+          <li style="min-width: 120px;">
+            <i class="bi bi-check-circle-fill text-success me-1"></i>
+            <%= amenity %>
+          </li>
+        <% }); %>
+      </ul>
+    </div>
+  <% } %>
+
   <!-- Reviews & Booking Section -->
   <div class="row">
     <!-- Reviews Column -->
@@ -131,13 +170,12 @@
           <p>
             <strong>Price:</strong> &#8377;<%= listing.price.toLocaleString("en-IN") %> / month
           </p>
-          
           <form action="/user/dashboard" method="POST">
             <input type="hidden" name="listingId" value="<%= listing._id %>">
             
-            <!-- Start Date -->
+            <!-- Expected Move-in Date -->
             <div class="mb-3">
-              <label for="startDate" class="form-label">Start Date</label>
+              <label for="startDate" class="form-label">Expected Move-in Date</label>
               <input type="date" name="startDate" class="form-control" required>
             </div>
             
@@ -146,12 +184,6 @@
               <label for="durationInMonths" class="form-label">Duration (in months)</label>
               <input type="number" name="durationInMonths" class="form-control" min="1" required>
             </div>
-            
-            <!-- Number of Guests -->
-            <!-- <div class="mb-3">
-              <label for="guests" class="form-label">Number of Guests</label>
-              <input type="number" name="guests" class="form-control" min="1" max="4" required>
-            </div> -->
             
             <!-- Full Name (Auto-filled) -->
             <div class="mb-3">
@@ -165,43 +197,44 @@
               <input type="tel" name="phone" class="form-control" required>
             </div>
             
-            <button type="submit" class="btn btn-danger w-100 fw-bold">Book Now</button>
+            <button type="submit" class="btn btn-danger w-100 fw-bold">Send Inquiry</button>
           </form>
           
+          <!-- Optional: JavaScript to update total price based on duration -->
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              const durationInput = document.querySelector('input[name="durationInMonths"]');
+              const pricePerMonth =  listing.price ;
+              const form = durationInput.closest('form');
+              const totalPriceElement = document.createElement('p');
+              totalPriceElement.classList.add('fw-bold', 'mt-2');
+              form.insertBefore(totalPriceElement, durationInput.nextSibling);
+
+              function updateTotalPrice() {
+                const duration = parseInt(durationInput.value) || 0;
+                const totalPrice = duration * pricePerMonth;
+                totalPriceElement.textContent = `Total Price: ₹${totalPrice.toLocaleString("en-IN")}`;
+              }
+
+              durationInput.addEventListener('input', updateTotalPrice);
+              updateTotalPrice(); // Initialize on page load
+            });
+          </script>
         </div>
       </div>
     </div>
   </div>
 </div>
-</div>
 
 <script>
-  // JavaScript to update main image when a thumbnail is clicked
+  // JavaScript to update cover image when a thumbnail is clicked
+  const coverImg = document.getElementById('coverImage');
   const thumbnails = document.querySelectorAll('.thumbnail');
-  const selectedImage = document.getElementById('selectedImage');
   thumbnails.forEach(thumbnail => {
     thumbnail.addEventListener('click', function() {
       thumbnails.forEach(t => t.classList.remove('active'));
-      selectedImage.src = this.getAttribute('data-url');
+      coverImg.src = this.getAttribute('data-url');
       this.classList.add('active');
     });
   });
-  document.addEventListener('DOMContentLoaded', function() {
-    const durationInput = document.querySelector('input[name="durationInMonths"]');
-    const pricePerMonth = listing.price ;
-    const totalPriceElement = document.createElement('p');
-    totalPriceElement.classList.add('fw-bold');
-    durationInput.closest('form').insertBefore(totalPriceElement, durationInput.nextSibling);
-
-    function updateTotalPrice() {
-      const duration = parseInt(durationInput.value) || 0;
-      const totalPrice = duration * pricePerMonth;
-      totalPriceElement.textContent = `Total Price: ₹${totalPrice.toLocaleString("en-IN")}`;
-    }
-
-    durationInput.addEventListener('input', updateTotalPrice);
-    updateTotalPrice(); // Initial call to set the total price on page load
-  });
-
-
-</script>
+</script>  
