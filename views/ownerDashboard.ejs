@@ -6,16 +6,16 @@
       <tr>
         <th>Property</th>
         <th>Guest Name</th>
-        <th>Move-in Date</th>
-        <th>Move-out Date</th>
-        <th>Duration (months)</th>
+        <th>Booking Type</th>
+        <th>Date Info</th>
+        <th>Duration / Guests</th>
         <th>Status</th>
         <th>Action</th>
       </tr>
     </thead>
     <tbody>
       <% 
-         // Helper function to compute the move-out date based on start date and duration
+         // Helper function for long-term bookings: compute move-out date.
          function computeMoveOut(startDate, duration) {
            const d = new Date(startDate);
            d.setMonth(d.getMonth() + Number(duration));
@@ -32,15 +32,33 @@
             <% } %>
           </td>
           <td><%= booking.fullName %></td>
-          <td><%= new Date(booking.startDate).toLocaleDateString() %></td>
-          <td><%= computeMoveOut(booking.startDate, booking.durationInMonths).toLocaleDateString() %></td>
-          <td><%= booking.durationInMonths %></td>
           <td>
-            <% if (booking.status === 'accepted') { %>
-              Accepted
-            <% } else { %>
-              <%= booking.status %>
+            <%= booking.bookingType === 'short-term' ? 'Short-Term' : 'Long-Term' %>
+          </td>
+          <td>
+            <% if (booking.bookingType === 'short-term') { 
+                  const checkin = new Date(booking.checkinDate);
+                  const checkout = new Date(booking.checkoutDate);
+            %>
+              <strong>Check-in:</strong> <%= checkin.toLocaleDateString() %><br>
+              <strong>Check-out:</strong> <%= checkout.toLocaleDateString() %>
+            <% } else { 
+                  const moveIn = new Date(booking.startDate);
+                  const moveOut = computeMoveOut(booking.startDate, booking.durationInMonths);
+            %>
+              <strong>Move-in:</strong> <%= moveIn.toLocaleDateString() %><br>
+              <strong>Move-out:</strong> <%= moveOut.toLocaleDateString() %>
             <% } %>
+          </td>
+          <td>
+            <% if (booking.bookingType === 'short-term') { %>
+              <strong>Guests:</strong> <%= booking.guests %>
+            <% } else { %>
+              <strong>Duration:</strong> <%= booking.durationInMonths %> month<%= booking.durationInMonths > 1 ? 's' : '' %>
+            <% } %>
+          </td>
+          <td>
+            <%= booking.status.charAt(0).toUpperCase() + booking.status.slice(1) %>
           </td>
           <td>
             <% if (booking.status === 'pending') { %>
@@ -57,3 +75,4 @@
     </tbody>
   </table>
 </div>
+

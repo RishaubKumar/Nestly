@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const User = require("../models/user.js");
 const wrapAsync = require("../utils/wrapAsync.js");
 const passport = require("passport");
 const { saveRedirectUrl, isloggedin } = require("../middleware.js");
@@ -23,7 +22,8 @@ router.route("/login")
 
 router.get('/logout', userController.logout);
 
-// New route for the user dashboard
+// User Dashboard route – this remains separate from the bookings routes.
 router.get('/user/dashboard', isloggedin, wrapAsync(userController.renderUserDashboard));
 
 module.exports = router;
+

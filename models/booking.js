@@ -21,14 +21,23 @@ const BookingSchema = new Schema({
     type: String, 
     required: true 
   },
-  startDate: { 
-    type: Date, 
+  phone: { 
+    type: String, 
     required: true 
   },
-  durationInMonths: { 
-    type: Number, 
+  // Indicates if this booking is for short-term or long-term rental
+  bookingType: { 
+    type: String, 
+    enum: ['short-term', 'long-term'], 
     required: true 
   },
+  // Fields for short-term bookings
+  checkinDate: Date,
+  checkoutDate: Date,
+  guests: Number,
+  // Fields for long-term bookings
+  startDate: Date,
+  durationInMonths: Number,
   status: {
     type: String,
     enum: ['pending', 'accepted', 'cancelled'],

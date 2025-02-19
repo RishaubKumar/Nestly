@@ -4,19 +4,20 @@ const wrapAsync = require("../utils/wrapAsync");
 const bookingController = require('../controllers/bookingController');
 const { isloggedin } = require('../middleware');
 
-// Create a booking (form action should match this endpoint)
-router.post('/user/dashboard', isloggedin, bookingController.createBooking);
+// Create a booking (short-term or long-term)
+router.post('/bookings', isloggedin, wrapAsync(bookingController.createBooking));
 
 // List bookings for the logged-in user
-router.get('/user/dashboard', isloggedin, bookingController.listBookings);
+router.get('/bookings', isloggedin, wrapAsync(bookingController.listBookings));
 
-// Owner dashboard (bookings for which the current user is the owner)
-router.get('/owner/dashboard', isloggedin, bookingController.getOwnerDashboard);
+// Owner dashboard: show booking requests for properties the user owns
+router.get('/owner/dashboard', isloggedin, wrapAsync(bookingController.getOwnerDashboard));
 
-// Accept a booking request (by the owner)
-router.post('/owner/accept', isloggedin, bookingController.acceptBooking);
+// Owner accepts a booking request
+router.post('/owner/accept', isloggedin, wrapAsync(bookingController.acceptBooking));
 
 // Cancel a booking
-router.post("/:id/cancel", isloggedin, wrapAsync(bookingController.cancelBooking));
+router.post('/bookings/:id/cancel', isloggedin, wrapAsync(bookingController.cancelBooking));
 
 module.exports = router;
+

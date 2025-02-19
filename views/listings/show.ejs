@@ -162,79 +162,130 @@
       </div>
     </div>
 
-    <!-- Booking Column -->
-    <div class="col-md-4">
-      <div class="card shadow-sm p-3">
-        <div class="card-body p-3">
-          <h4 class="fw-bold">Rent this place</h4>
-          <p>
-            <strong>Price:</strong> &#8377;<%= listing.price.toLocaleString("en-IN") %> / month
-          </p>
-          <form action="/user/dashboard" method="POST">
-            <input type="hidden" name="listingId" value="<%= listing._id %>">
-            
-            <!-- Expected Move-in Date -->
-            <div class="mb-3">
-              <label for="startDate" class="form-label">Expected Move-in Date</label>
-              <input type="date" name="startDate" class="form-control" required>
-            </div>
-            
-            <!-- Duration in Months -->
-            <div class="mb-3">
-              <label for="durationInMonths" class="form-label">Duration (in months)</label>
-              <input type="number" name="durationInMonths" class="form-control" min="1" required>
-            </div>
-            
-            <!-- Full Name (Auto-filled) -->
-            <div class="mb-3">
-              <label for="fullName" class="form-label">Your Full Name</label>
-              <input type="text" name="fullName" class="form-control" value="<%= currUser ? currUser.username : '' %>" readonly required>
-            </div>
-            
-            <!-- Phone Number -->
-            <div class="mb-3">
-              <label for="phone" class="form-label">Phone Number</label>
-              <input type="tel" name="phone" class="form-control" required>
-            </div>
-            
-            <button type="submit" class="btn btn-danger w-100 fw-bold">Send Inquiry</button>
-          </form>
-          
-          <!-- Optional: JavaScript to update total price based on duration -->
-          <script>
-            document.addEventListener('DOMContentLoaded', function() {
-              const durationInput = document.querySelector('input[name="durationInMonths"]');
-              const pricePerMonth =  listing.price ;
-              const form = durationInput.closest('form');
-              const totalPriceElement = document.createElement('p');
-              totalPriceElement.classList.add('fw-bold', 'mt-2');
-              form.insertBefore(totalPriceElement, durationInput.nextSibling);
+   <!-- Booking Column -->
+<div class="col-md-4">
+  <div class="card shadow-sm p-3">
+    <div class="card-body p-3">
+      <!-- Toggle Switch -->
+      <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" id="toggleBookingType" checked>
+        <label class="form-check-label" for="toggleBookingType">Book this place</label>
+      </div>
 
-              function updateTotalPrice() {
-                const duration = parseInt(durationInput.value) || 0;
-                const totalPrice = duration * pricePerMonth;
-                totalPriceElement.textContent = `Total Price: ₹${totalPrice.toLocaleString("en-IN")}`;
-              }
+      <!-- Book This Place Form -->
+      <div id="bookForm" style="display: none;">
+        <h4 class="fw-bold">Book this place</h4>
+        <p>
+          <strong>Price:</strong> &#8377;<span id="nightlyPrice"></span> / night
+        </p>
+        <form action="/bookings" method="POST">
+          <input type="hidden" name="listingId" value="<%= listing._id %>">
+          <!-- Check-in Date -->
+          <div class="mb-3">
+            <label for="checkin" class="form-label">Check-in Date</label>
+            <input type="date" name="checkin" class="form-control" required>
+          </div>
+          <!-- Check-out Date -->
+          <div class="mb-3">
+            <label for="checkout" class="form-label">Check-out Date</label>
+            <input type="date" name="checkout" class="form-control" required>
+          </div>
+          <!-- Number of Guests -->
+          <div class="mb-3">
+            <label for="guests" class="form-label">Number of Guests</label>
+            <input type="number" name="guests" class="form-control" min="1" max="4" required>
+          </div>
+          <!-- Full Name (Auto-filled) -->
+          <div class="mb-3">
+            <label for="fullName" class="form-label">Your Full Name</label>
+            <input type="text" name="fullName" class="form-control" value="<%= currUser ? currUser.username : '' %>" readonly required>
+          </div>
+          <!-- Phone Number -->
+          <div class="mb-3">
+            <label for="phone" class="form-label">Phone Number</label>
+            <input type="tel" name="phone" class="form-control" required>
+          </div>
+          <button type="submit" class="btn btn-danger w-100 fw-bold">Book Now</button>
+        </form>
+      </div>
 
-              durationInput.addEventListener('input', updateTotalPrice);
-              updateTotalPrice(); // Initialize on page load
-            });
-          </script>
-        </div>
+      <!-- Rent This Place Form -->
+      <div id="rentForm">
+        <h4 class="fw-bold">Rent this place</h4>
+        <p>
+          <strong>Price:</strong> &#8377;<%= listing.price.toLocaleString("en-IN") %> / month
+        </p>
+        <form action="/bookings" method="POST">
+          <input type="hidden" name="listingId" value="<%= listing._id %>">
+          <!-- Expected Move-in Date -->
+          <div class="mb-3">
+            <label for="startDate" class="form-label">Expected Move-in Date</label>
+            <input type="date" name="startDate" class="form-control" required>
+          </div>
+          <!-- Duration in Months -->
+          <div class="mb-3">
+            <label for="durationInMonths" class="form-label">Duration (in months)</label>
+            <input type="number" name="durationInMonths" class="form-control" min="1" required>
+          </div>
+          <!-- Full Name (Auto-filled) -->
+          <div class="mb-3">
+            <label for="fullName" class="form-label">Your Full Name</label>
+            <input type="text" name="fullName" class="form-control" value="<%= currUser ? currUser.username : '' %>" readonly required>
+          </div>
+          <!-- Phone Number -->
+          <div class="mb-3">
+            <label for="phone" class="form-label">Phone Number</label>
+            <input type="tel" name="phone" class="form-control" required>
+          </div>
+          <button type="submit" class="btn btn-danger w-100 fw-bold">Send Inquiry</button>
+        </form>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-  // JavaScript to update cover image when a thumbnail is clicked
-  const coverImg = document.getElementById('coverImage');
-  const thumbnails = document.querySelectorAll('.thumbnail');
-  thumbnails.forEach(thumbnail => {
-    thumbnail.addEventListener('click', function() {
-      thumbnails.forEach(t => t.classList.remove('active'));
-      coverImg.src = this.getAttribute('data-url');
-      this.classList.add('active');
+  document.addEventListener('DOMContentLoaded', function() {
+    const toggleSwitch = document.getElementById('toggleBookingType');
+    const bookForm = document.getElementById('bookForm');
+    const rentForm = document.getElementById('rentForm');
+    const formLabel = document.querySelector('label[for="toggleBookingType"]');
+    const monthlyPrice =` <%= listing.price %>`; // Monthly price from your server-side code
+    const nightlyPriceElement = document.getElementById('nightlyPrice');
+
+    // Function to calculate and display the nightly price
+    function displayNightlyPrice() {
+      const daysInMonth = 30; // Assuming 30 days in a month
+      const dailyPrice = monthlyPrice / daysInMonth;
+      const inflatedDailyPrice = dailyPrice * 3;
+      nightlyPriceElement.textContent = inflatedDailyPrice.toLocaleString("en-IN");
+    }
+
+    // Initial display of nightly price
+    displayNightlyPrice();
+
+    // Set initial form visibility based on the toggle switch being checked by default
+    if (toggleSwitch.checked) {
+      bookForm.style.display = 'none';
+      rentForm.style.display = 'block';
+      formLabel.textContent = 'Book this place';
+    } else {
+      bookForm.style.display = 'block';
+      rentForm.style.display = 'none';
+      formLabel.textContent = 'Rent this place';
+    }
+
+    // Toggle between forms on switch change
+    toggleSwitch.addEventListener('change', function() {
+      if (toggleSwitch.checked) {
+        bookForm.style.display = 'none';
+        rentForm.style.display = 'block';
+        formLabel.textContent = 'Book this place';
+      } else {
+        bookForm.style.display = 'block';
+        rentForm.style.display = 'none';
+        formLabel.textContent = 'Rent this place';
+      }
     });
   });
-</script>  
+</script>

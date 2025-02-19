@@ -26,18 +26,26 @@ module.exports.renderNewForm = (req, res) => {
 };
 
 module.exports.showListing = async (req, res) => {
-  let { id } = req.params;
-  const listing = await Listing.findById(id)
-    .populate({
-      path: "reviews",
-      populate: { path: "author" },
-    })
-    .populate("owner");
-  if (!listing) {
-    req.flash("error", "Sorry, No similar listing!");
-    return res.redirect("/listings");
+  try {
+    // Populate the reviews and owner (only username) as per your show.ejs requirements
+    const listing = await Listing.findById(req.params.id)
+      .populate({
+        path: 'reviews',
+        populate: { path: 'author', select: 'username' }
+      })
+      .populate('owner', 'username');
+
+    if (!listing) {
+      req.flash('error', 'Listing not found.');
+      return res.redirect('/listings');
+    }
+    // Pass the current user as currUser so that the view can compare ownership
+    res.render('listings/show', { listing, currUser: req.user });
+  } catch (error) {
+    console.error('Error fetching listing:', error);
+    req.flash('error', 'Error fetching listing details.');
+    res.redirect('back');
   }
-  res.render("listings/show.ejs", { listing });
 };
 
 module.exports.createListing = async (req, res, next) => {
