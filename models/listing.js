@@ -8,22 +8,30 @@ const listingSchema = new Schema({
     required: true,
   },
   description: String,
-  // An array of image objects
   images: [
     {
       url: String,
       filename: String,
     }
   ],
-  // The primary price (typically the long-term monthly price)
   price: Number,
   location: String,
   country: String,
-  // Rental types supported by this listing:
+  // New field renamed to "rentalOption" to avoid reserved names
+  rentalOption: {
+    type: String,
+    enum: ['rent', 'booking', 'both'],
+    required: true,
+  },
   rentalTypes: {
     type: [String],
     enum: ['short-term', 'long-term'],
     default: ['long-term']
+  },
+  // Add amenities field to store the array of amenities
+  amenities: {
+    type: [String],
+    default: []
   },
   reviews: [{
     type: Schema.Types.ObjectId,
@@ -35,7 +43,6 @@ const listingSchema = new Schema({
   },
 });
 
-// When a listing is deleted, also delete its associated reviews
 listingSchema.post("findOneAndDelete", async function(listing) {
   if (listing) {
     await Review.deleteMany({ _id: { $in: listing.reviews } });

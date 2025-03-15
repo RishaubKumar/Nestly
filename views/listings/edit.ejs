@@ -27,6 +27,24 @@
       <label for="country" class="form-label">Country</label>
       <input type="text" name="listing[country]" id="country" class="form-control" value="<%= listing.country %>" required>
     </div>
+    <!-- Rental Option -->
+    <div class="mb-3">
+      <label class="form-label">Listing Type</label>
+      <div class="d-flex gap-4">
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="listing[rentalOption]" id="rent" value="rent" <%= listing.rentalOption === 'rent' ? 'checked' : '' %> required>
+          <label class="form-check-label" for="rent">Rent</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="listing[rentalOption]" id="booking" value="booking" <%= listing.rentalOption === 'booking' ? 'checked' : '' %> required>
+          <label class="form-check-label" for="booking">Booking</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="listing[rentalOption]" id="both" value="both" <%= listing.rentalOption === 'both' ? 'checked' : '' %> required>
+          <label class="form-check-label" for="both">Both</label>
+        </div>
+      </div>
+    </div>
     
     <!-- Amazon-like Gallery for Existing Images with Delete Option -->
     <div class="mb-3">

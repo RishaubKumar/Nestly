@@ -1,78 +1,361 @@
 <% layout("/layouts/boilerplate") %>
-<div class="container mt-4">
-  <h1>Owner Dashboard</h1>
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Property</th>
-        <th>Guest Name</th>
-        <th>Booking Type</th>
-        <th>Date Info</th>
-        <th>Duration / Guests</th>
-        <th>Status</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% 
-         // Helper function for long-term bookings: compute move-out date.
-         function computeMoveOut(startDate, duration) {
-           const d = new Date(startDate);
-           d.setMonth(d.getMonth() + Number(duration));
-           return d;
-         }
-      %>
-      <% bookings.forEach(booking => { %>
-        <tr>
-          <td>
-            <% if (booking.property) { %>
-              <%= booking.property.title %>
-            <% } else { %>
-              <span class="text-muted">[Property not available]</span>
-            <% } %>
-          </td>
-          <td><%= booking.fullName %></td>
-          <td>
-            <%= booking.bookingType === 'short-term' ? 'Short-Term' : 'Long-Term' %>
-          </td>
-          <td>
-            <% if (booking.bookingType === 'short-term') { 
-                  const checkin = new Date(booking.checkinDate);
-                  const checkout = new Date(booking.checkoutDate);
-            %>
-              <strong>Check-in:</strong> <%= checkin.toLocaleDateString() %><br>
-              <strong>Check-out:</strong> <%= checkout.toLocaleDateString() %>
-            <% } else { 
-                  const moveIn = new Date(booking.startDate);
-                  const moveOut = computeMoveOut(booking.startDate, booking.durationInMonths);
-            %>
-              <strong>Move-in:</strong> <%= moveIn.toLocaleDateString() %><br>
-              <strong>Move-out:</strong> <%= moveOut.toLocaleDateString() %>
-            <% } %>
-          </td>
-          <td>
-            <% if (booking.bookingType === 'short-term') { %>
-              <strong>Guests:</strong> <%= booking.guests %>
-            <% } else { %>
-              <strong>Duration:</strong> <%= booking.durationInMonths %> month<%= booking.durationInMonths > 1 ? 's' : '' %>
-            <% } %>
-          </td>
-          <td>
-            <%= booking.status.charAt(0).toUpperCase() + booking.status.slice(1) %>
-          </td>
-          <td>
-            <% if (booking.status === 'pending') { %>
-              <form action="/owner/accept" method="POST" style="display:inline;">
-                <input type="hidden" name="bookingId" value="<%= booking._id %>">
-                <button type="submit" class="btn btn-primary btn-sm">Proceed</button>
-              </form>
-            <% } else { %>
-              <span class="text-success">Processed</span>
-            <% } %>
-          </td>
-        </tr>
-      <% }); %>
-    </tbody>
-  </table>
+
+<style>
+  :root {
+    --main-red: #e53935;
+    --light-red: #ffcdd2;
+    --dark-red: #b71c1c;
+    --light-gray: #f5f5f5;
+    --medium-gray: #e0e0e0;
+    --text-gray: #757575;
+  }
+  
+  .dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+    opacity: 0;
+    animation: fadeIn 0.8s forwards;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .page-title {
+    color: var(--dark-red);
+    font-weight: 300;
+    letter-spacing: 0.5px;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--light-red);
+    padding-bottom: 0.5rem;
+  }
+  
+  .booking-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-bottom: 2rem;
+  }
+  
+  .booking-table thead th {
+    background-color: var(--dark-red);
+    color: white;
+    font-weight: 500;
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    position: sticky;
+    top: 0;
+  }
+  
+  .booking-table tbody tr {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid var(--medium-gray);
+  }
+  
+  .booking-table tbody tr:last-child {
+    border-bottom: none;
+  }
+  
+  .booking-table tbody tr:hover {
+    background-color: rgba(229, 57, 53, 0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+  
+  .booking-table td {
+    padding: 16px;
+    vertical-align: middle;
+    border-top: 1px solid var(--medium-gray);
+    font-size: 0.95rem;
+  }
+  
+  .property-name {
+    font-weight: 500;
+    color: var(--dark-red);
+  }
+  
+  .booking-type {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    background: var(--light-red);
+    color: var(--dark-red);
+  }
+  
+  .booking-type.long-term {
+    background-color: #e8eaf6;
+    color: #3949ab;
+  }
+  
+  .date-info {
+    line-height: 1.6;
+  }
+  
+  .date-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--text-gray);
+    letter-spacing: 0.5px;
+  }
+  
+  .date-value {
+    font-weight: 500;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  
+  .status-pending {
+    background: #fff8e1;
+    color: #ff8f00;
+    animation: pulse 2s infinite;
+  }
+  
+  .status-confirmed {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  .status-cancelled {
+    background: #f5f5f5;
+    color: #9e9e9e;
+  }
+  
+  @keyframes pulse {
+    0% { opacity: 0.8; }
+    50% { opacity: 1; }
+    100% { opacity: 0.8; }
+  }
+  
+  .action-btn {
+    background: transparent;
+    color: var(--main-red);
+    border: 1px solid var(--main-red);
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .action-btn:hover {
+    background: var(--main-red);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(229, 57, 53, 0.3);
+  }
+  
+  .processed-label {
+    color: #2e7d32;
+    font-weight: 500;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+  }
+  
+  .processed-label:before {
+    content: "✓";
+    display: inline-block;
+    margin-right: 5px;
+    font-weight: bold;
+  }
+  
+  .no-bookings {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-gray);
+    background: var(--light-gray);
+    border-radius: 8px;
+    margin-top: 1rem;
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 992px) {
+    .booking-table {
+      display: block;
+      overflow-x: auto;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .column-hide-mobile {
+      display: none;
+    }
+    
+    .booking-table td, .booking-table th {
+      padding: 12px 10px;
+      font-size: 0.85rem;
+    }
+    
+    .action-btn {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+    }
+  }
+</style>
+
+<div class="dashboard-container mt-4">
+  <h1 class="page-title">Owner Dashboard</h1>
+  
+  <% if (bookings && bookings.length > 0) { %>
+    <div class="table-responsive">
+      <table class="booking-table">
+        <thead>
+          <tr>
+            <th>Property</th>
+            <th>Guest</th>
+            <th class="column-hide-mobile">Type</th>
+            <th>Date Info</th>
+            <th class="column-hide-mobile">Details</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% 
+             // Helper function for long-term bookings: compute move-out date.
+             function computeMoveOut(startDate, duration) {
+               const d = new Date(startDate);
+               d.setMonth(d.getMonth() + Number(duration));
+               return d;
+             }
+          %>
+          <% bookings.forEach((booking, index) => { 
+             // Determine animation delay for staggered effect
+             const delay = index * 0.05;
+             
+             // Determine status class
+             let statusClass = "status-pending";
+             if (booking.status === "confirmed") statusClass = "status-confirmed";
+             if (booking.status === "cancelled") statusClass = "status-cancelled";
+          %>
+            <tr style="animation-delay: delay s">
+              <td>
+                <div class="property-name">
+                  <% if (booking.property) { %>
+                    <%= booking.property.title %>
+                  <% } else { %>
+                    <span class="text-muted">[Property not available]</span>
+                  <% } %>
+                </div>
+              </td>
+              <td><%= booking.fullName %></td>
+              <td class="column-hide-mobile">
+                <span class="booking-type <%= booking.bookingType === 'long-term' ? 'long-term' : '' %>">
+                  <%= booking.bookingType === 'short-term' ? 'Short-Term' : 'Long-Term' %>
+                </span>
+              </td>
+              <td>
+                <div class="date-info">
+                  <% if (booking.bookingType === 'short-term') { 
+                        const checkin = new Date(booking.checkinDate);
+                        const checkout = new Date(booking.checkoutDate);
+                  %>
+                    <div>
+                      <span class="date-label">Check-in</span><br>
+                      <span class="date-value"><%= checkin.toLocaleDateString() %></span>
+                    </div>
+                    <div class="mt-2">
+                      <span class="date-label">Check-out</span><br>
+                      <span class="date-value"><%= checkout.toLocaleDateString() %></span>
+                    </div>
+                  <% } else { 
+                        const moveIn = new Date(booking.startDate);
+                        const moveOut = computeMoveOut(booking.startDate, booking.durationInMonths);
+                  %>
+                    <div>
+                      <span class="date-label">Move-in</span><br>
+                      <span class="date-value"><%= moveIn.toLocaleDateString() %></span>
+                    </div>
+                    <div class="mt-2">
+                      <span class="date-label">Move-out</span><br>
+                      <span class="date-value"><%= moveOut.toLocaleDateString() %></span>
+                    </div>
+                  <% } %>
+                </div>
+              </td>
+              <td class="column-hide-mobile">
+                <% if (booking.bookingType === 'short-term') { %>
+                  <strong>Guests:</strong> <%= booking.guests %>
+                <% } else { %>
+                  <strong>Duration:</strong> <%= booking.durationInMonths %> month<%= booking.durationInMonths > 1 ? 's' : '' %>
+                <% } %>
+              </td>
+              <td>
+                <span class="status-badge <%= statusClass %>">
+                  <%= booking.status.charAt(0).toUpperCase() + booking.status.slice(1) %>
+                </span>
+              </td>
+              <td>
+                <% if (booking.status === 'pending') { %>
+                  <form action="/owner/accept" method="POST" class="action-form">
+                    <input type="hidden" name="bookingId" value="<%= booking._id %>">
+                    <button type="submit" class="action-btn">Proceed</button>
+                  </form>
+                <% } else { %>
+                  <span class="processed-label">Processed</span>
+                <% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <div class="no-bookings">
+      <p>You don't have any booking requests at the moment.</p>
+    </div>
+  <% } %>
 </div>
 
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add staggered animation to table rows
+    const rows = document.querySelectorAll('tbody tr');
+    
+    rows.forEach((row, index) => {
+      setTimeout(() => {
+        row.style.opacity = '0';
+        row.style.animation = 'fadeIn 0.5s forwards';
+      }, index * 50);
+    });
+    
+    // Add click animation for action buttons
+    const actionButtons = document.querySelectorAll('.action-btn');
+    
+    actionButtons.forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        // Prevent immediate submission
+        e.preventDefault();
+        
+        // Show loading animation
+        this.innerHTML = '<span style="display:inline-block;animation:spin 1s infinite linear;">↻</span> Processing...';
+        this.disabled = true;
+        this.style.opacity = '0.7';
+        
+        // Submit the form after a short delay
+        const form = this.closest('form');
+        setTimeout(() => {
+          form.submit();
+        }, 300);
+      });
+    });
+  });
+  
+
+</script>

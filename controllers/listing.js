@@ -2,18 +2,22 @@ const Listing = require("../models/listing");
 
 module.exports.index = async (req, res) => {
   try {
-    const { q } = req.query;
-    let allListings;
+    const { q, rentalOption } = req.query;
+    let query = {};
+
     if (q && q.trim() !== "") {
       // Search by location (partial and case-insensitive match)
-      allListings = await Listing.find({
-        location: { $regex: q, $options: "i" }
-      });
-    } else {
-      allListings = await Listing.find({});
+      query.location = { $regex: q, $options: "i" };
     }
-    // Pass the query back so the view can preserve the search term
-    res.render("listings/index.ejs", { allListings, q });
+
+    if (rentalOption && rentalOption.trim() !== "") {
+      // Filter by rental option (rent, booking, both)
+      query.rentalOption = rentalOption;
+    }
+
+    const allListings = await Listing.find(query);
+    // Pass the query parameters back so the view can preserve the search term and filter
+    res.render("listings/index.ejs", { allListings, q, rentalOption });
   } catch (err) {
     console.error(err);
     req.flash("error", "Error retrieving listings");
@@ -49,9 +53,10 @@ module.exports.showListing = async (req, res) => {
 };
 
 module.exports.createListing = async (req, res, next) => {
-  // Create a new listing using data from the form
+  // Create a new listing using data from the form including the new "rentalOption" field
   const newListing = new Listing(req.body.listing);
   newListing.owner = req.user._id;
+  
   // Map through the array of uploaded files and create an array of image objects
   if (req.files && req.files.length > 0) {
     newListing.images = req.files.map(file => ({ url: file.path, filename: file.filename }));
@@ -101,8 +106,6 @@ module.exports.updateListing = async (req, res) => {
   res.redirect(`/listings/${id}`);
 };
 
-
-
 module.exports.destroyListing = async (req, res) => {
   let { id } = req.params;
   let deletedListing = await Listing.findByIdAndDelete(id);
@@ -114,3 +117,4 @@ module.exports.destroyListing = async (req, res) => {
 module.exports.renderHome = (req, res) => {
   res.render("home.ejs", { isHomePage: true });
 };
+

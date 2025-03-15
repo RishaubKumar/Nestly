@@ -1,44 +1,340 @@
 <% layout("/layouts/boilerplate") %>
-<div class="row">
-  <div class="col-8 offset-2">
-    <br>
-    <h3>Create A New Listing</h3>
-    <form method="POST" action="/listings" novalidate class="needs-validation" enctype="multipart/form-data">
-      <div class="mb-3">
-        <label for="title" class="form-label">Title</label>
-        <input name="listing[title]" placeholder="enter title" type="text" class="form-control" required/>
-        <div class="invalid-feedback">Title is necessary!</div>
-      </div>
-      <div class="mb-3">
-        <label for="description" class="form-label">Description</label>
-        <textarea name="listing[description]" class="form-control" required></textarea>
-        <div class="invalid-feedback">Enter a valid description</div>
-      </div>
-      <div class="mb-3">
-        <label for="images" class="form-label">Upload Images</label>
-        <!-- Changed the name and added the multiple attribute -->
-        <input name="images" type="file" class="form-control"  multiple />
-      </div>
-      <div class="row">
-        <div class="mb-3 col-md-4">
-          <label for="price" class="form-label">Price</label>
-          <input name="listing[price]" placeholder="1200" class="form-control" required/>
-          <div class="invalid-feedback">Enter a valid price</div>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+      <div class="card shadow-lg border-0 rounded-lg">
+        <div class="card-header bg-gradient-primary text-white">
+          <h3 class="text-center font-weight-bold my-2">Create A New Listing</h3>
         </div>
-        <div class="mb-3 col-md-8">
-          <label for="country" class="form-label">Country</label>
-          <input name="listing[country]" placeholder="India" type="text" class="form-control" required/>
-          <div class="invalid-feedback">Enter a valid country name</div>
+        <div class="card-body p-4">
+          <form method="POST" action="/listings" novalidate class="needs-validation" enctype="multipart/form-data">
+            <!-- Title -->
+            <div class="mb-4">
+              <label for="title" class="form-label fw-bold">Title</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-type"></i></span>
+                <input name="listing[title]" placeholder="Enter a catchy title" type="text" class="form-control" required/>
+              </div>
+              <div class="invalid-feedback">Title is necessary!</div>
+            </div>
+            
+            <!-- Description -->
+            <div class="mb-4">
+              <label for="description" class="form-label fw-bold">Description</label>
+              <textarea name="listing[description]" class="form-control" rows="4" placeholder="Describe your listing in detail" required></textarea>
+              <div class="invalid-feedback">Enter a valid description</div>
+            </div>
+            
+            <!-- Image Upload -->
+            <div class="mb-4">
+              <label for="images" class="form-label fw-bold">Upload Images</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-image"></i></span>
+                <input name="images" type="file" class="form-control" multiple />
+              </div>
+              <div class="form-text text-muted">Select multiple images for better visibility</div>
+            </div>
+            
+            <!-- Price and Country -->
+            <div class="row mb-4">
+              <div class="col-md-4">
+                <label for="price" class="form-label fw-bold">Price</label>
+                <div class="input-group">
+                  <span class="input-group-text">₹</span>
+                  <input name="listing[price]" placeholder="1200" type="number" class="form-control" required/>
+                </div>
+                <div class="invalid-feedback">Enter a valid price</div>
+              </div>
+              <div class="col-md-8">
+                <label for="country" class="form-label fw-bold">Country</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-globe"></i></span>
+                  <input name="listing[country]" placeholder="India" type="text" class="form-control" required/>
+                </div>
+                <div class="invalid-feedback">Enter a valid country name</div>
+              </div>
+            </div>
+            
+            <!-- Location -->
+            <div class="mb-4">
+              <label for="location" class="form-label fw-bold">Location</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                <input name="listing[location]" placeholder="Noida, Uttar Pradesh" type="text" class="form-control" required/>
+              </div>
+              <div class="invalid-feedback">Enter a valid location</div>
+            </div>
+            
+            <!-- Listing Type Selection -->
+            <div class="mb-4">
+              <label class="form-label fw-bold">Listing Type</label>
+              <div class="d-flex gap-4">
+                <!-- Updated name to listing[rentalOption] -->
+                <div class="form-check form-check-inline custom-radio">
+                  <input class="form-check-input" type="radio" name="listing[rentalOption]" id="rent" value="rent" required>
+                  <label class="form-check-label px-2" for="rent">Rent</label>
+                </div>
+                <div class="form-check form-check-inline custom-radio">
+                  <input class="form-check-input" type="radio" name="listing[rentalOption]" id="booking" value="booking" required>
+                  <label class="form-check-label px-2" for="booking">Booking</label>
+                </div>
+                <div class="form-check form-check-inline custom-radio">
+                  <input class="form-check-input" type="radio" name="listing[rentalOption]" id="both" value="both" required>
+                  <label class="form-check-label px-2" for="both">Both</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Conditional Amenities -->
+            <div class="mb-4" id="amenitiesSection" style="display:none;">
+              <label class="form-label fw-bold mb-3">Amenities</label>
+              
+              <div id="bookingAmenities" style="display:none;" class="mb-4">
+                <div class="card border-info">
+                  <div class="card-header bg-info bg-opacity-25">
+                    <h5 class="mb-0">Booking Amenities</h5>
+                  </div>
+                  <div class="card-body row">
+                    <div class="col-md-4 mb-2">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="listing[amenities][]" id="wifi" value="WiFi">
+                        <label class="form-check-label" for="wifi"><i class="bi bi-wifi me-2"></i>WiFi</label>
+                      </div>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="listing[amenities][]" id="ac" value="AC">
+                        <label class="form-check-label" for="ac"><i class="bi bi-snow me-2"></i>AC</label>
+                      </div>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="listing[amenities][]" id="parking-booking" value="Parking">
+                        <label class="form-check-label" for="parking-booking"><i class="bi bi-p-square me-2"></i>Parking</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div id="rentAmenities" style="display:none;">
+                <div class="card border-success">
+                  <div class="card-header bg-success bg-opacity-25">
+                    <h5 class="mb-0">Rent Amenities</h5>
+                  </div>
+                  <div class="card-body row">
+                    <div class="col-md-6 mb-2">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="listing[amenities][]" id="pets" value="Pets Allowed">
+                        <label class="form-check-label" for="pets"><i class="bi bi-emoji-smile me-2"></i>Pets Allowed</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="listing[amenities][]" id="parking-rent" value="Parking">
+                        <label class="form-check-label" for="parking-rent"><i class="bi bi-p-square me-2"></i>Parking</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="listing[amenities][]" id="terrace" value="Terrace">
+                        <label class="form-check-label" for="terrace"><i class="bi bi-house me-2"></i>Terrace</label>
+                      </div>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="listing[amenities][]" id="playingArea" value="Playing Area">
+                        <label class="form-check-label" for="playingArea"><i class="bi bi-dribbble me-2"></i>Playing Area</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="d-grid gap-2 mt-4">
+              <button type="submit" class="btn btn-primary btn-lg add-listing-btn">
+                <i class="bi bi-plus-circle me-2"></i>Add Listing
+              </button>
+            </div>
+          </form>
         </div>
       </div>
-      <div class="mb-3">
-        <label for="location" class="form-label">Location</label>
-        <input name="listing[location]" placeholder="Noida, Uttar Pradesh" type="text" class="form-control" required/>
-        <div class="invalid-feedback">Enter a valid location</div>
-      </div>
-      <br>
-      <button class="btn btn-dark add-btn">Add</button>
-    </form>
-    <br>
+    </div>
   </div>
 </div>
+
+<!-- Add Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.3/font/bootstrap-icons.min.css">
+<!-- Add Animate.css for animations -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+<style>
+  .bg-gradient-primary {
+    background: linear-gradient(to right, #e53935, #c62828);
+  }
+  .card {
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+  .custom-radio .form-check-input:checked {
+    background-color: #e53935;
+    border-color: #e53935;
+  }
+  .form-check-input:checked {
+    background-color: #e53935;
+    border-color: #e53935;
+  }
+  .form-control:focus {
+    border-color: #e53935;
+    box-shadow: 0 0 0 0.25rem rgba(229, 57, 53, 0.25);
+  }
+  .btn-primary {
+    background-color: #e53935;
+    border-color: #e53935;
+    transition: all 0.3s ease;
+  }
+  .btn-primary:hover {
+    background-color: #c62828;
+    border-color: #c62828;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  .form-label {
+    color: #5a5c69;
+  }
+  .input-group-text {
+    background-color: #f8f9fc;
+    border-right: none;
+  }
+  .input-group .form-control {
+    border-left: none;
+  }
+  .card-header {
+    border-bottom: none;
+  }
+  .card-body {
+    padding: 2rem;
+  }
+  .input-group.focused {
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+  }
+  .add-listing-btn:hover {
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  .shake-on-invalid { animation: shake 0.5s; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+  }
+  .fade-in { animation: fadeIn 0.5s; }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .form-control, .input-group { transition: all 0.3s ease; }
+  .form-control:focus { transform: translateY(-2px); }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Updated selector to use the new name attribute ("listing[rentalOption]")
+  const listingTypeRadios = document.querySelectorAll('input[name="listing[rentalOption]"]');
+  const amenitiesSection = document.getElementById('amenitiesSection');
+  const bookingAmenities = document.getElementById('bookingAmenities');
+  const rentAmenities = document.getElementById('rentAmenities');
+  const formControls = document.querySelectorAll('.form-control');
+  const card = document.querySelector('.card');
+
+  card.classList.add('animate__animated', 'animate__fadeInUp');
+
+  const form = document.querySelector('.needs-validation');
+  form.addEventListener('submit', function(event) {
+    if (!form.checkValidity()) {
+      event.preventDefault();
+      event.stopPropagation();
+      const invalidInputs = document.querySelectorAll('.form-control:invalid');
+      invalidInputs.forEach(input => {
+        input.classList.add('shake-on-invalid');
+        setTimeout(() => { input.classList.remove('shake-on-invalid'); }, 500);
+      });
+    }
+    form.classList.add('was-validated');
+  });
+
+  listingTypeRadios.forEach(radio => {
+    radio.addEventListener('change', function() {
+      if (amenitiesSection.style.display === 'none') {
+        amenitiesSection.style.display = 'block';
+        amenitiesSection.classList.add('animate__animated', 'animate__fadeIn');
+      }
+      if (this.value === 'booking') {
+        rentAmenities.style.display = 'none';
+        bookingAmenities.style.display = 'block';
+        bookingAmenities.classList.add('animate__animated', 'animate__fadeInRight');
+      } else if (this.value === 'rent') {
+        bookingAmenities.style.display = 'none';
+        rentAmenities.style.display = 'block';
+        rentAmenities.classList.add('animate__animated', 'animate__fadeInLeft');
+      } else if (this.value === 'both') {
+        bookingAmenities.style.display = 'block';
+        rentAmenities.style.display = 'block';
+        bookingAmenities.classList.add('animate__animated', 'animate__fadeInUp');
+        rentAmenities.classList.add('animate__animated', 'animate__fadeInUp');
+      }
+    });
+  });
+
+  formControls.forEach(control => {
+    control.classList.add('fade-in');
+    control.addEventListener('focus', function() {
+      const inputGroup = this.closest('.input-group');
+      if (inputGroup) {
+        inputGroup.classList.add('focused');
+      } else {
+        this.classList.add('focused');
+      }
+    });
+    control.addEventListener('blur', function() {
+      const inputGroup = this.closest('.input-group');
+      if (inputGroup) {
+        inputGroup.classList.remove('focused');
+      } else {
+        this.classList.remove('focused');
+      }
+    });
+    control.addEventListener('input', function() {
+      this.classList.add('active-typing');
+      setTimeout(() => { this.classList.remove('active-typing'); }, 300);
+    });
+  });
+  
+  const checkboxes = document.querySelectorAll('.form-check-input[type="checkbox"]');
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const label = this.nextElementSibling;
+      if (this.checked) {
+        label.classList.add('animate__animated', 'animate__pulse');
+        setTimeout(() => { label.classList.remove('animate__animated', 'animate__pulse'); }, 1000);
+      }
+    });
+  });
+  
+  document.querySelectorAll('.form-label').forEach(label => {
+    label.classList.add('animate__animated', 'animate__fadeIn');
+    label.style.animationDelay = '0.2s';
+  });
+});
+</script>

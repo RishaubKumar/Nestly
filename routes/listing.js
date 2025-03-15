@@ -13,7 +13,7 @@ router
   .get(wrapAsync(listingController.index))
   .post(
     isloggedin, 
-    upload.array("images"), // Updated to handle multiple images
+    upload.array("images"), // Handles multiple image uploads
     validatelisting, 
     wrapAsync(listingController.createListing)
   );
@@ -27,7 +27,7 @@ router
   .put(
     isloggedin,
     isOwner,
-    upload.array("images"), // Updated to handle multiple images on update
+    upload.array("images"), // Handles multiple image uploads on update
     validatelisting, 
     wrapAsync(listingController.updateListing)
   )

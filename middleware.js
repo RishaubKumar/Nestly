@@ -6,7 +6,7 @@ const ExpressError = require("./utils/ExpressError.js");
 module.exports.isloggedin = (req, res, next) => {
   if (!req.isAuthenticated()) {
     req.session.redirectUrl = req.originalUrl;
-    req.flash("error", "Please login to procced further !");
+    req.flash("error", "Please login to proceed further!");
     return res.redirect("/login");
   }
   next();
@@ -29,20 +29,22 @@ module.exports.isOwner = async (req, res, next) => {
   next();
 };
 
+// Modified validatelisting middleware: validate req.body.listing (which should include rentalOption)
 module.exports.validatelisting = (req, res, next) => {
-  let { error } = listingSchema.validate(req.body);
+  const { error } = listingSchema.validate(req.body.listing);
   if (error) {
-    let errMsg = error.details.map((el) => el.message).join(",");
+    const errMsg = error.details.map(el => el.message).join(",");
     throw new ExpressError(400, errMsg);
   } else {
     next();
   }
 };
 
+
 module.exports.validateReview = (req, res, next) => {
-  let { error } = reviewSchema.validate(req.body);
+  const { error } = reviewSchema.validate(req.body);
   if (error) {
-    let errMsg = error.details.map((el) => el.message).join(",");
+    const errMsg = error.details.map((el) => el.message).join(",");
     throw new ExpressError(400, errMsg);
   } else {
     next();
