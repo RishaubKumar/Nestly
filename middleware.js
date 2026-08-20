@@ -1,3 +1,5 @@
+// Defines middleware functions for route protection, listing/review validation, and author/owner authorization checks
+
 const Listing = require("./models/listing");
 const Review = require("./models/review");
 const { listingSchema, reviewSchema } = require("./schema.js");
@@ -22,6 +24,10 @@ module.exports.saveRedirectUrl = (req, res, next) => {
 module.exports.isOwner = async (req, res, next) => {
   let { id } = req.params;
   let listing = await Listing.findById(id);
+  if (!listing) {
+    req.flash("error", "Property listing not found!");
+    return res.redirect("/listings");
+  }
   if (!listing.owner._id.equals(res.locals.currUser._id)) {
     req.flash("error", "You are not the Owner of the Property!");
     return res.redirect(`/listings/${id}`);
@@ -29,7 +35,6 @@ module.exports.isOwner = async (req, res, next) => {
   next();
 };
 
-// Modified validatelisting middleware: validate req.body.listing (which should include rentalOption)
 module.exports.validatelisting = (req, res, next) => {
   const { error } = listingSchema.validate(req.body.listing);
   if (error) {
@@ -39,7 +44,6 @@ module.exports.validatelisting = (req, res, next) => {
     next();
   }
 };
-
 
 module.exports.validateReview = (req, res, next) => {
   const { error } = reviewSchema.validate(req.body);
@@ -54,6 +58,10 @@ module.exports.validateReview = (req, res, next) => {
 module.exports.isReviewAuthor = async (req, res, next) => {
   let { id, reviewId } = req.params;
   let review = await Review.findById(reviewId);
+  if (!review) {
+    req.flash("error", "Review not found!");
+    return res.redirect(`/listings/${id}`);
+  }
   if (!review.author.equals(res.locals.currUser._id)) {
     req.flash("error", "You are not the Author of this review!");
     return res.redirect(`/listings/${id}`);
@@ -61,18 +69,6 @@ module.exports.isReviewAuthor = async (req, res, next) => {
   next();
 };
 
-module.exports.setUserRole = async (req, res, next) => {
-  if (req.user) {
-    // Check if the user owns any listings
-    const ownedListings = await Listing.findOne({ owner: req.user._id });
-    // Set ownsListings to true if at least one listing is found
-    res.locals.currUser = req.user;
-    res.locals.currUser.ownsListings = !!ownedListings;
-  }
-  next();
-};
-
-// New middleware: Validate that uploaded files are images
 module.exports.validateImages = (req, res, next) => {
   if (req.files && req.files.length > 0) {
     for (const file of req.files) {

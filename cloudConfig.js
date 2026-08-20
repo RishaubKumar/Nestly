@@ -1,3 +1,5 @@
+// Configures the Cloudinary API credentials and multer storage engine for image uploads
+
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
@@ -11,7 +13,7 @@ const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
       folder: 'Nestly_DEV',
-      allowedformats: ["png","jpg","jpeg"], // supports promises as well
+      allowedformats: ["png","jpg","jpeg"],
     },
   });
   

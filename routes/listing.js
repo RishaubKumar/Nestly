@@ -1,3 +1,5 @@
+// Defines routes related to listing creation, display, editing, updating, and deletion
+
 const express = require("express");
 const router = express.Router();
 const wrapAsync = require("../utils/wrapAsync.js");
@@ -13,12 +15,11 @@ router
   .get(wrapAsync(listingController.index))
   .post(
     isloggedin, 
-    upload.array("images"), // Handles multiple image uploads
+    upload.array("images"), 
     validatelisting, 
     wrapAsync(listingController.createListing)
   );
 
-// New Route for displaying form
 router.get("/new", isloggedin, listingController.renderNewForm);
 
 router
@@ -27,13 +28,12 @@ router
   .put(
     isloggedin,
     isOwner,
-    upload.array("images"), // Handles multiple image uploads on update
+    upload.array("images"), 
     validatelisting, 
     wrapAsync(listingController.updateListing)
   )
   .delete(isloggedin, isOwner, wrapAsync(listingController.destroyListing));
 
-// Edit Route
 router.get("/:id/edit", isloggedin, isOwner, wrapAsync(listingController.renderEditForm));
 
 module.exports = router;

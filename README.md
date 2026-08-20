@@ -1,66 +1,46 @@
-# 🏡 Nestly - Full-Stack Rental Listing Platform  
+# Nestly - Room and Property Rental Web Application
 
-## 🌟 About Nestly
-Nestly is a **full-stack rental listing platform** that allows property owners to list their rentals and users to book properties seamlessly. Built with **Node.js, Express, MongoDB, and EJS**, it provides a smooth and responsive UI for property discovery and booking.
+## Project Purpose
+Nestly is a web application built to address a real-world problem faced by many families and travelers. Often, guardians of students visiting colleges, families visiting patients in hospitals, or people traveling for temporary work need stays that last for a few days to a few weeks. 
 
-## 🚀 Features
-- 🏠 **Property Listings**: Owners can add and manage their rental properties.
-- 🔍 **Search & Filter**: Users can explore listings based on location, price, and availability.
-- 📅 **Booking System**: Securely book properties with check-in and check-out dates.
-- 👤 **User Authentication**: Sign-up, login, and manage profiles.
-- 📢 **Reviews & Ratings**: Leave feedback for properties.
-- 🛠️ **Admin & Owner Dashboard**: Manage bookings, accept/reject requests.
-- 🗑 **Remove Listings**: Owners can delete their property listings.
-- ✅ **Booking Status**: Track booking status (Pending, Accepted, Rejected).
+Standard hotel bookings are expensive for such durations, and searching for local rooms or rental options manually consumes valuable time and frequently leads to pricing disputes. Nestly helps users find proper room stays and affordable rentals directly from property owners, without wasting time or dealing with pricing conflicts.
 
-## 🛠 Tech Stack
-- **Frontend**: EJS, Bootstrap
-- **Backend**: Node.js, Express.js
-- **Database**: MongoDB with Mongoose
-- **Authentication**: Passport.js
+## Features
+- User registration and login for both guests and property owners.
+- Add, edit, and delete property listings with image uploads and amenities choices.
+- Filter properties by Rent (monthly stays) or Booking (daily stays).
+- Sending booking requests and rental inquiries.
+- Owner dashboard to accept or reject incoming booking requests.
+- User dashboard to track active, pending, accepted, or rejected booking requests with cancellation options.
+- Review and rating system for guests who have completed their stays.
 
-## ⚡ Installation & Setup
-### Prerequisites
-Ensure you have **Node.js** and **MongoDB** installed.
+## Tech Stack
+- Frontend: HTML, CSS, Bootstrap, EJS (Embedded JavaScript templates)
+- Backend: Node.js, Express.js
+- Database: MongoDB (using Mongoose ODM)
+- Authentication: Passport.js
 
-### Clone the Repository
-```bash
-git clone https://github.com/Rishaubkumar/nestly.git
-cd nestly
-```
+## Local Setup Instructions
 
-### Install Dependencies
-```bash
-npm install
-```
+1. Clone the repository:
+   git clone https://github.com/Rishaubkumar/nestly.git
+   cd nestly
 
-### Set Up Environment Variables
-Create a `.env` file in the root directory and add:
-```
-MONGO_URI=your_mongodb_connection_string
-SESSION_SECRET=your_secret_key
-PORT=5000
-```
+2. Install the dependencies:
+   npm install
 
-### Start the Server
-```bash
-npm start
-```
-Server runs on `http://localhost:8080`
+3. Set up the environment variables:
+   Create a .env file in the root folder with the following variables:
+   CLOUD_NAME=your_cloudinary_name
+   CLOUD_API_KEY=your_cloudinary_api_key
+   CLOUD_API_SECRET=your_cloudinary_api_secret
+   ATLASDB_URL=your_mongodb_atlas_connection_string
+   SECRET=your_session_secret_key
 
-## 🔧 Usage
-1. **Register/Login** as a user or property owner.
-2. **List Properties** (if you’re an owner) or **Book a Stay** (if you’re a guest).
-3. **Manage Bookings** through the dashboard.
-4. **Review & Rate** listings after your stay.
+4. Run the application:
+   node app.js
+   
+   The server will start listening on port 8080. Open http://localhost:8080 in your browser.
 
-## 🤝 Contributing
-1. Fork the repository
-2. Create a new feature branch: `git checkout -b feature-name`
-3. Commit changes: `git commit -m 'Added new feature'`
-4. Push to branch: `git push origin feature-name`
-5. Create a Pull Request
-
-
----
-### ⭐ Star the repository if you found this useful!
+## Acknowledgment
+We would like to express our sincere gratitude and thanks to Dr. Anand Motwani, under whose valuable guidance and mentorship we have successfully built this project.

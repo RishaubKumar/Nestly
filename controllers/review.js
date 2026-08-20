@@ -1,27 +1,50 @@
-// controllers/review.js
+// Handles review creation and deletion operations
+
 const Review = require("../models/review");
 const Listing = require("../models/listing");
+const Booking = require("../models/booking");
 
 module.exports.createReview = async (req, res) => {
   try {
-    // Find the listing using the id from params
     const listing = await Listing.findById(req.params.id);
     if (!listing) {
       req.flash("error", "Listing not found.");
       return res.redirect("back");
     }
-    
-    // Create a new Review document using the data from req.body.review
+
+    if (listing.owner.equals(req.user._id)) {
+      req.flash("error", "You cannot review your own listing.");
+      return res.redirect(`/listings/${listing._id}`);
+    }
+
+    const hasInteracted = await Booking.findOne({
+      property: listing._id,
+      user: req.user._id,
+      status: 'accepted'
+    });
+
+    if (!hasInteracted) {
+      req.flash("error", "You can only review properties that you have booked and had accepted.");
+      return res.redirect(`/listings/${listing._id}`);
+    }
+
+    const existingReview = await Review.findOne({
+      author: req.user._id,
+      _id: { $in: listing.reviews }
+    });
+
+    if (existingReview) {
+      req.flash("error", "You have already reviewed this listing.");
+      return res.redirect(`/listings/${listing._id}`);
+    }
+
     const review = new Review(req.body.review);
-    // Set the author to the current logged-in user's id
     review.author = req.user._id;
-    // Save the review document
     await review.save();
-    
-    // Instead of pushing the entire review object, push only its _id
+
     listing.reviews.push(review._id);
     await listing.save();
-    
+
     req.flash("success", "Review added successfully.");
     res.redirect(`/listings/${listing._id}`);
   } catch (error) {
@@ -34,11 +57,8 @@ module.exports.createReview = async (req, res) => {
 module.exports.destroyReview = async (req, res) => {
   try {
     const { id, reviewId } = req.params;
-    // Remove the review's ObjectId from the listing's reviews array
     await Listing.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
-    // Delete the review document from the database
     await Review.findByIdAndDelete(reviewId);
-    
     req.flash("success", "Review deleted successfully.");
     res.redirect(`/listings/${id}`);
   } catch (error) {

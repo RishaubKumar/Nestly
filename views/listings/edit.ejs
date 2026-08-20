@@ -1,97 +1,203 @@
+<!-- Renders the edit form for property owners to update listing information, including images and amenities -->
+
 <% layout("/layouts/boilerplate") %>
 <div class="container mt-4">
-  <h1>Edit Listing</h1>
-  <form action="/listings/<%= listing._id %>?_method=PUT" method="POST" enctype="multipart/form-data">
-    <!-- Title -->
-    <div class="mb-3">
-      <label for="title" class="form-label">Title</label>
-      <input type="text" name="listing[title]" id="title" class="form-control" value="<%= listing.title %>" required>
-    </div>
-    <!-- Description -->
-    <div class="mb-3">
-      <label for="description" class="form-label">Description</label>
-      <textarea name="listing[description]" id="description" class="form-control" rows="4" required><%= listing.description %></textarea>
-    </div>
-    <!-- Price -->
-    <div class="mb-3">
-      <label for="price" class="form-label">Price</label>
-      <input type="number" name="listing[price]" id="price" class="form-control" value="<%= listing.price %>" required>
-    </div>
-    <!-- Location -->
-    <div class="mb-3">
-      <label for="location" class="form-label">Location</label>
-      <input type="text" name="listing[location]" id="location" class="form-control" value="<%= listing.location %>" required>
-    </div>
-    <!-- Country -->
-    <div class="mb-3">
-      <label for="country" class="form-label">Country</label>
-      <input type="text" name="listing[country]" id="country" class="form-control" value="<%= listing.country %>" required>
-    </div>
-    <!-- Rental Option -->
-    <div class="mb-3">
-      <label class="form-label">Listing Type</label>
-      <div class="d-flex gap-4">
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="radio" name="listing[rentalOption]" id="rent" value="rent" <%= listing.rentalOption === 'rent' ? 'checked' : '' %> required>
-          <label class="form-check-label" for="rent">Rent</label>
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <h1 class="mb-4">Edit Listing</h1>
+      <form action="/listings/<%= listing._id %>?_method=PUT" method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+          <label for="title" class="form-label fw-bold">Title</label>
+          <input type="text" name="listing[title]" id="title" class="form-control" value="<%= listing.title %>" required>
         </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="radio" name="listing[rentalOption]" id="booking" value="booking" <%= listing.rentalOption === 'booking' ? 'checked' : '' %> required>
-          <label class="form-check-label" for="booking">Booking</label>
+        
+        <div class="mb-3">
+          <label for="description" class="form-label fw-bold">Description</label>
+          <textarea name="listing[description]" id="description" class="form-control" rows="4" required><%= listing.description %></textarea>
         </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="radio" name="listing[rentalOption]" id="both" value="both" <%= listing.rentalOption === 'both' ? 'checked' : '' %> required>
-          <label class="form-check-label" for="both">Both</label>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Amazon-like Gallery for Existing Images with Delete Option -->
-    <div class="mb-3">
-      <label class="form-label">Existing Images</label>
-      <% if(listing.images && listing.images.length > 0) { %>
-        <div class="gallery-container" style="display: flex; gap: 20px;">
-          <div class="main-image" style="flex: 1; max-width: 60%; border: 1px solid #ddd; padding: 5px;">
-            <img id="selectedImage" src="<%= listing.images[0].url %>" alt="Main Image" style="width: 100%; height: auto; object-fit: cover;">
+        
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label for="price" class="form-label fw-bold">Price</label>
+            <input type="number" name="listing[price]" id="price" class="form-control" value="<%= listing.price %>" min="0" required>
           </div>
-          <div class="thumbnails" style="display: flex; flex-direction: column; gap: 10px; max-width: 35%;">
-            <% listing.images.forEach(function(image, index) { %>
-              <div class="thumbnail-container" style="border: 1px solid #ddd; padding: 2px;">
-                <div class="thumbnail <%= index === 0 ? 'active' : '' %>" data-url="<%= image.url %>" style="cursor: pointer;">
-                  <img src="<%= image.url %>" alt="Thumbnail <%= index + 1 %>" style="width: 100%; height: auto; object-fit: cover;">
+          <div class="col-md-4">
+            <label for="location" class="form-label fw-bold">Location</label>
+            <input type="text" name="listing[location]" id="location" class="form-control" value="<%= listing.location %>" required>
+          </div>
+          <div class="col-md-4">
+            <label for="country" class="form-label fw-bold">Country</label>
+            <input type="text" name="listing[country]" id="country" class="form-control" value="<%= listing.country %>" required>
+          </div>
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label fw-bold">Listing Type</label>
+          <div class="d-flex gap-4">
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="listing[rentalOption]" id="rent" value="rent" <%= listing.rentalOption === 'rent' ? 'checked' : '' %> required>
+              <label class="form-check-label" for="rent">Rent</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="listing[rentalOption]" id="booking" value="booking" <%= listing.rentalOption === 'booking' ? 'checked' : '' %> required>
+              <label class="form-check-label" for="booking">Booking</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="listing[rentalOption]" id="both" value="both" <%= listing.rentalOption === 'both' ? 'checked' : '' %> required>
+              <label class="form-check-label" for="both">Both</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-4" id="amenitiesSection" style="display:none;">
+          <label class="form-label fw-bold mb-2">Amenities</label>
+          
+          <div id="bookingAmenities" style="display:none;" class="mb-3">
+            <div class="card border-info">
+              <div class="card-header bg-info bg-opacity-10 py-2">
+                <h6 class="mb-0">Booking Amenities</h6>
+              </div>
+              <div class="card-body row py-2">
+                <div class="col-md-4 mb-2">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="listing[amenities][]" id="wifi" value="WiFi" <%= listing.amenities && listing.amenities.includes('WiFi') ? 'checked' : '' %>>
+                    <label class="form-check-label" for="wifi"><i class="bi bi-wifi me-2"></i>WiFi</label>
+                  </div>
                 </div>
-                <div style="text-align: center; margin-top: 5px;">
-                  <label>
-                    <input type="checkbox" name="deleteImages" value="<%= image.filename %>"> Delete
-                  </label>
+                <div class="col-md-4 mb-2">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="listing[amenities][]" id="ac" value="AC" <%= listing.amenities && listing.amenities.includes('AC') ? 'checked' : '' %>>
+                    <label class="form-check-label" for="ac"><i class="bi bi-snow me-2"></i>AC</label>
+                  </div>
+                </div>
+                <div class="col-md-4 mb-2">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="listing[amenities][]" id="parking-booking" value="Parking" <%= listing.amenities && listing.amenities.includes('Parking') ? 'checked' : '' %>>
+                    <label class="form-check-label" for="parking-booking"><i class="bi bi-p-square me-2"></i>Parking</label>
+                  </div>
                 </div>
               </div>
-            <% }); %>
+            </div>
+          </div>
+          
+          <div id="rentAmenities" style="display:none;">
+            <div class="card border-success">
+              <div class="card-header bg-success bg-opacity-10 py-2">
+                <h6 class="mb-0">Rent Amenities</h6>
+              </div>
+              <div class="card-body row py-2">
+                <div class="col-md-6 mb-2">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="listing[amenities][]" id="pets" value="Pets Allowed" <%= listing.amenities && listing.amenities.includes('Pets Allowed') ? 'checked' : '' %>>
+                    <label class="form-check-label" for="pets"><i class="bi bi-emoji-smile me-2"></i>Pets Allowed</label>
+                  </div>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="listing[amenities][]" id="parking-rent" value="Parking" <%= listing.amenities && listing.amenities.includes('Parking') ? 'checked' : '' %>>
+                    <label class="form-check-label" for="parking-rent"><i class="bi bi-p-square me-2"></i>Parking</label>
+                  </div>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="listing[amenities][]" id="terrace" value="Terrace" <%= listing.amenities && listing.amenities.includes('Terrace') ? 'checked' : '' %>>
+                    <label class="form-check-label" for="terrace"><i class="bi bi-house me-2"></i>Terrace</label>
+                  </div>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="listing[amenities][]" id="playingArea" value="Playing Area" <%= listing.amenities && listing.amenities.includes('Playing Area') ? 'checked' : '' %>>
+                    <label class="form-check-label" for="playingArea"><i class="bi bi-dribbble me-2"></i>Playing Area</label>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      <% } else { %>
-        <p>No images available.</p>
-      <% } %>
+        
+        <div class="mb-3">
+          <label class="form-label fw-bold">Existing Images</label>
+          <% if(listing.images && listing.images.length > 0) { %>
+            <div class="row">
+              <div class="col-md-7 mb-3">
+                <div class="border p-2 rounded">
+                  <img id="selectedImage" src="<%= listing.images[0].url %>" alt="Main Image" class="img-fluid rounded" style="max-height: 300px; width: 100%; object-fit: cover;">
+                </div>
+              </div>
+              <div class="col-md-5 mb-3" style="max-height: 300px; overflow-y: auto;">
+                <% listing.images.forEach(function(image, index) { %>
+                  <div class="d-flex align-items-center gap-2 border p-2 mb-2 rounded thumbnail-container">
+                    <div class="thumbnail <%= index === 0 ? 'border border-primary' : '' %>" data-url="<%= image.url %>" style="cursor: pointer; width: 60px;">
+                      <img src="<%= image.url %>" alt="Thumbnail <%= index + 1 %>" class="img-fluid rounded">
+                    </div>
+                    <div class="form-check ms-auto">
+                      <input type="checkbox" class="form-check-input" name="deleteImages" value="<%= image.filename %>" id="del-<%= index %>">
+                      <label class="form-check-label text-danger" for="del-<%= index %>">Delete</label>
+                    </div>
+                  </div>
+                <% }); %>
+              </div>
+            </div>
+          <% } else { %>
+            <p class="text-muted">No images available.</p>
+          <% } %>
+        </div>
+        
+        <div class="mb-4">
+          <label for="newImages" class="form-label fw-bold">Add New Images</label>
+          <input type="file" name="images" id="newImages" class="form-control" multiple>
+        </div>
+        
+        <button type="submit" class="btn btn-danger w-100 fw-bold mb-5 py-2">Update Listing</button>
+      </form>
     </div>
-    
-    <!-- Upload New Images -->
-    <div class="mb-3">
-      <label for="newImages" class="form-label">Add New Images</label>
-      <input type="file" name="images" id="newImages" class="form-control" multiple>
-    </div>
-    <button type="submit" class="btn btn-primary">Update Listing</button>
-  </form>
+  </div>
 </div>
 
 <script>
-  // JavaScript to update main image on thumbnail click
-  const thumbnails = document.querySelectorAll('.thumbnail');
-  const selectedImage = document.getElementById('selectedImage');
-  thumbnails.forEach(thumbnail => {
-    thumbnail.addEventListener('click', function() {
-      thumbnails.forEach(t => t.classList.remove('active'));
-      selectedImage.src = this.getAttribute('data-url');
-      this.classList.add('active');
+  document.addEventListener('DOMContentLoaded', function() {
+    const thumbnails = document.querySelectorAll('.thumbnail');
+    const selectedImage = document.getElementById('selectedImage');
+    thumbnails.forEach(thumbnail => {
+      thumbnail.addEventListener('click', function() {
+        thumbnails.forEach(t => t.classList.remove('border', 'border-primary'));
+        selectedImage.src = this.getAttribute('data-url');
+        this.classList.add('border', 'border-primary');
+      });
     });
+
+    const listingTypeRadios = document.querySelectorAll('input[name="listing[rentalOption]"]');
+    const amenitiesSection = document.getElementById('amenitiesSection');
+    const bookingAmenities = document.getElementById('bookingAmenities');
+    const rentAmenities = document.getElementById('rentAmenities');
+
+    function updateAmenitiesDisplay(val) {
+      if (!val) {
+        amenitiesSection.style.display = 'none';
+        return;
+      }
+      amenitiesSection.style.display = 'block';
+      if (val === 'booking') {
+        rentAmenities.style.display = 'none';
+        bookingAmenities.style.display = 'block';
+      } else if (val === 'rent') {
+        bookingAmenities.style.display = 'none';
+        rentAmenities.style.display = 'block';
+      } else if (val === 'both') {
+        bookingAmenities.style.display = 'block';
+        rentAmenities.style.display = 'block';
+      }
+    }
+
+    listingTypeRadios.forEach(radio => {
+      radio.addEventListener('change', function() {
+        updateAmenitiesDisplay(this.value);
+      });
+    });
+
+    const initialOption = document.querySelector('input[name="listing[rentalOption]"]:checked');
+    if (initialOption) {
+      updateAmenitiesDisplay(initialOption.value);
+    }
   });
 </script>

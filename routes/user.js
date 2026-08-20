@@ -1,3 +1,5 @@
+// Defines routes related to user authentication, registration, login, logout, and dashboards
+
 const express = require("express");
 const router = express.Router();
 const wrapAsync = require("../utils/wrapAsync.js");
@@ -21,8 +23,6 @@ router.route("/login")
   );
 
 router.get('/logout', userController.logout);
-
-// User Dashboard route – this remains separate from the bookings routes.
 router.get('/user/dashboard', isloggedin, wrapAsync(userController.renderUserDashboard));
 
 module.exports = router;

@@ -1,289 +1,66 @@
+<!-- Renders the main directory of property listings, with filters for location and rental option -->
+
 <% layout("/layouts/boilerplate") %>
 
-<style>
-  /* Custom animations */
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  
-  @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.02); }
-    100% { transform: scale(1); }
-  }
-  
-  @keyframes slideInLeft {
-    from { opacity: 0; transform: translateX(-30px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-  
-  /* Enhanced styling with red and white theme */
-  .custom-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
-  }
-  
-  .search-form {
-    background: linear-gradient(135deg, #fff 0%, #f8f8f8 100%);
-    padding: 1.5rem;
-    border-radius: 12px;
-    border-left: 4px solid #e30000;
-    box-shadow: 0 4px 15px rgba(227, 0, 0, 0.08);
-    margin-bottom: 2.5rem;
-    animation: slideInLeft 0.8s ease-out forwards;
-  }
-  
-  .search-input {
-    border: none;
-    border-radius: 8px;
-    padding: 12px 20px;
-    font-size: 1rem;
-    box-shadow: inset 0 2px 5px rgba(0,0,0,0.08);
-    transition: all 0.3s ease;
-  }
-  
-  .search-input:focus {
-    box-shadow: inset 0 2px 5px rgba(0,0,0,0.12), 0 0 0 3px rgba(227, 0, 0, 0.15);
-  }
-  
-  .custom-select {
-    border: none;
-    border-radius: 8px;
-    padding: 12px 20px;
-    font-size: 1rem;
-    background-color: white;
-    box-shadow: inset 0 2px 5px rgba(0,0,0,0.08);
-    transition: all 0.3s ease;
-  }
-  
-  .search-btn {
-    background: linear-gradient(135deg, #ff3333 0%, #e30000 100%);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 12px 25px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    transition: all 0.3s ease;
-  }
-  
-  .search-btn:hover {
-    background: linear-gradient(135deg, #e30000 0%, #c00000 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(227, 0, 0, 0.2);
-  }
-  
-  .listing-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 25px;
-  }
-  
-  .listing-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    height: 100%;
-  }
-  
-  .listing-card {
-    border-radius: 12px;
-    overflow: hidden;
-    border-top: 3px solid #e30000;
-    background-color: white;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.07);
-    transition: all 0.4s ease;
-    height: 100%;
-    animation: fadeIn 0.6s ease-out forwards;
-    animation-fill-mode: both;
-    opacity: 0;
-  }
-  
-  .listing-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 15px 30px rgba(227, 0, 0, 0.1);
-  }
-  
-  .listing-img {
-    height: 220px;
-    object-fit: cover;
-    width: 100%;
-    transition: all 0.5s ease;
-  }
-  
-  .listing-card:hover .listing-img {
-    transform: scale(1.05);
-  }
-  
-  .card-content {
-    padding: 1.5rem;
-  }
-  
-  .listing-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    color: #333;
-  }
-  
-  .listing-price {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #e30000;
-    margin-bottom: 0.5rem;
-  }
-  
-  .listing-location {
-    color: #6c757d;
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-  }
-  
-  .listing-option {
-    display: inline-block;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  
-  .option-rent {
-    background-color: #ffebeb;
-    color: #e30000;
-  }
-  
-  .option-booking {
-    background-color: #ffe0e0;
-    color: #c00000;
-  }
-  
-  .option-both {
-    background-color: #ffd6d6;
-    color: #a00000;
-  }
-  
-  .empty-results {
-    text-align: center;
-    padding: 3rem;
-    color: #6c757d;
-    font-size: 1.2rem;
-    animation: fadeIn 0.8s ease-out forwards;
-  }
-  
-  .input-group-text {
-    color: #e30000;
-  }
-</style>
-
-<body>
-  <div class="custom-container">
-    <!-- Search & Filter Bar -->
-    <form method="GET" action="/listings" class="search-form mb-4">
-      <div class="row g-3">
-        <div class="col-md-6">
-          <div class="input-group">
-            <span class="input-group-text bg-white border-0">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-              </svg>
-            </span>
-            <input type="text" name="q" class="form-control search-input" placeholder="Search by location..." value="<%= typeof q !== 'undefined' ? q : '' %>">
-          </div>
-        </div>
-        <div class="col-md-4">
-          <select name="rentalOption" class="form-select custom-select">
-            <option value="">All Options</option>
-            <option value="rent" <%= rentalOption === 'rent' ? 'selected' : '' %>>Rent</option>
-            <option value="booking" <%= rentalOption === 'booking' ? 'selected' : '' %>>Booking</option>
-            <option value="both" <%= rentalOption === 'both' ? 'selected' : '' %>>Both</option>
-          </select>
-        </div>
-        <div class="col-md-2">
-          <button type="submit" class="btn search-btn w-100">Search</button>
+<div class="container mt-4">
+  <!-- Search & Filter Form -->
+  <form method="GET" action="/listings" class="bg-light p-3 rounded mb-4 border-start border-danger border-4 border-end-0 border-top-0 border-bottom-0">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-5">
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-danger"></i></span>
+          <input type="text" name="q" class="form-control border-start-0" placeholder="Search by location..." value="<%= typeof q !== 'undefined' ? q : '' %>">
         </div>
       </div>
-    </form>
-    
-    <!-- Listings Grid -->
-    <% if (allListings && allListings.length > 0) { %>
-      <div class="listing-grid">
-        <% allListings.forEach(function(listing, index) { %>
-          <a href="/listings/<%= listing._id %>" class="listing-link">
-            <div class="card listing-card">
-              <div style="overflow: hidden;">
-                <% if (listing.images && listing.images.length > 0) { %>
-                  <img src="<%= listing.images[0].url %>" class="listing-img" alt="<%= listing.title %>">
-                <% } else { %>
-                  <div class="listing-img bg-light d-flex align-items-center justify-content-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#e30000" class="bi bi-house" viewBox="0 0 16 16">
-                      <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
-                    </svg>
-                  </div>
-                <% } %>
-              </div>
-              <div class="card-content">
-                <h3 class="listing-title"><%= listing.title %></h3>
-                <div class="listing-price">
+      <div class="col-md-5">
+        <select name="rentalOption" class="form-select">
+          <option value="">All Listings (Booking & Rent)</option>
+          <option value="rent" <%= rentalOption === 'rent' ? 'selected' : '' %>>Rentals Only</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-danger w-100 fw-bold">Search</button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Listings Grid -->
+  <% if (allListings && allListings.length > 0) { %>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      <% allListings.forEach(function(listing) { %>
+        <div class="col">
+          <a href="/listings/<%= listing._id %>" class="text-decoration-none text-dark">
+            <div class="card h-100 shadow-sm border-0 border-top border-danger border-3">
+              <% if (listing.images && listing.images.length > 0) { %>
+                <img src="<%= listing.images[0].url %>" class="card-img-top" alt="<%= listing.title %>" style="height: 200px; object-fit: cover;">
+              <% } else { %>
+                <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                  <i class="bi bi-house-door text-danger" style="font-size: 3rem;"></i>
+                </div>
+              <% } %>
+              <div class="card-body">
+                <h5 class="card-title fw-bold text-truncate"><%= listing.title %></h5>
+                <p class="card-text text-danger fw-bold mb-1">
                   &#8377; <%= listing.price.toLocaleString("en-IN") %>
                   <% if (listing.rentalOption === 'booking') { %>
-                    /day
+                    / day
                   <% } else { %>
-                    /month
+                    / month
                   <% } %>
-                </div>
-                <div class="listing-location">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#e30000" class="bi bi-geo-alt me-1" viewBox="0 0 16 16">
-                    <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A31.493 31.493 0 0 1 8 14.58a31.481 31.481 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10"/>
-                    <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-                  </svg>
-                  <%= listing.location %>
-                </div>
-                <div class="mt-2">
-                  <span class="listing-option <%= 'option-' + listing.rentalOption %>">
-                    <%= listing.rentalOption %>
-                  </span>
-                </div>
+                </p>
+                <p class="card-text text-muted mb-2"><i class="bi bi-geo-alt me-1"></i><%= listing.location %></p>
+                <span class="badge bg-danger text-uppercase"><%= listing.rentalOption %></span>
               </div>
             </div>
           </a>
-        <% }); %>
-      </div>
-    <% } else { %>
-      <div class="empty-results">
-        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#e30000" class="bi bi-search mb-3" viewBox="0 0 16 16">
-          <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-        </svg>
-        <h3>No listings found</h3>
-        <p>Try adjusting your search criteria or browse all listings</p>
-      </div>
-    <% } %>
-  </div>
-  
-  <script>
-    // Add pulse animation to the search button on hover
-    document.querySelector('.search-btn').addEventListener('mouseenter', function() {
-      this.style.animation = 'pulse 0.8s ease-in-out';
-    });
-    
-    document.querySelector('.search-btn').addEventListener('mouseleave', function() {
-      this.style.animation = 'none';
-    });
-    
-    // Progressive loading of listing cards with animation delay
-    document.addEventListener('DOMContentLoaded', function() {
-      const cards = document.querySelectorAll('.listing-card');
-      cards.forEach((card, index) => {
-        card.style.animationDelay = $;{0.1 + (index * 0.05)}s;
-        setTimeout(() => {
-          card.style.opacity = '1';
-        }, 100 + (index * 50));
-      });
-    });
-  </script>
-</body>
+        </div>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <div class="text-center py-5">
+      <i class="bi bi-search text-muted" style="font-size: 3rem;"></i>
+      <h4 class="mt-3">No listings found</h4>
+      <p class="text-muted">Try adjusting your search criteria or browse all options.</p>
+    </div>
+  <% } %>
+</div>

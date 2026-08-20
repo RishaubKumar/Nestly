@@ -1,3 +1,5 @@
+// Defines the schema and model for reviews
+
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 

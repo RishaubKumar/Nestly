@@ -1,3 +1,5 @@
+// Handles listing CRUD operations, home rendering, search filtering, and image upload updates
+
 const Listing = require("../models/listing");
 
 module.exports.index = async (req, res) => {
@@ -6,17 +8,23 @@ module.exports.index = async (req, res) => {
     let query = {};
 
     if (q && q.trim() !== "") {
-      // Search by location (partial and case-insensitive match)
       query.location = { $regex: q, $options: "i" };
     }
 
     if (rentalOption && rentalOption.trim() !== "") {
-      // Filter by rental option (rent, booking, both)
-      query.rentalOption = rentalOption;
+      if (rentalOption === "rent") {
+        query.$or = [
+          { rentalOption: { $in: ["rent", "both"] } },
+          { rentalOption: { $exists: false } }
+        ];
+      } else if (rentalOption === "booking") {
+        query.rentalOption = { $in: ["booking", "both"] };
+      } else {
+        query.rentalOption = rentalOption;
+      }
     }
 
     const allListings = await Listing.find(query);
-    // Pass the query parameters back so the view can preserve the search term and filter
     res.render("listings/index.ejs", { allListings, q, rentalOption });
   } catch (err) {
     console.error(err);
@@ -31,7 +39,6 @@ module.exports.renderNewForm = (req, res) => {
 
 module.exports.showListing = async (req, res) => {
   try {
-    // Populate the reviews and owner (only username) as per your show.ejs requirements
     const listing = await Listing.findById(req.params.id)
       .populate({
         path: 'reviews',
@@ -43,7 +50,6 @@ module.exports.showListing = async (req, res) => {
       req.flash('error', 'Listing not found.');
       return res.redirect('/listings');
     }
-    // Pass the current user as currUser so that the view can compare ownership
     res.render('listings/show', { listing, currUser: req.user });
   } catch (error) {
     console.error('Error fetching listing:', error);
@@ -53,11 +59,9 @@ module.exports.showListing = async (req, res) => {
 };
 
 module.exports.createListing = async (req, res, next) => {
-  // Create a new listing using data from the form including the new "rentalOption" field
   const newListing = new Listing(req.body.listing);
   newListing.owner = req.user._id;
   
-  // Map through the array of uploaded files and create an array of image objects
   if (req.files && req.files.length > 0) {
     newListing.images = req.files.map(file => ({ url: file.path, filename: file.filename }));
   }
@@ -80,19 +84,16 @@ module.exports.updateListing = async (req, res) => {
   const { id } = req.params;
   let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing });
   
-  // Remove images if checkboxes are checked
   if (req.body.deleteImages) {
     const deleteFilenames = Array.isArray(req.body.deleteImages)
       ? req.body.deleteImages
       : [req.body.deleteImages];
-    // Optionally, remove images from cloud storage here if needed.
     listing.images = listing.images.filter(
       img => !deleteFilenames.includes(img.filename)
     );
     await listing.save();
   }
   
-  // Add any new images uploaded
   if (req.files && req.files.length > 0) {
     const newImages = req.files.map(file => ({
       url: file.path,
